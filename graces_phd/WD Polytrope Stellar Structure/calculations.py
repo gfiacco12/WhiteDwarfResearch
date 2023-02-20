@@ -1,4 +1,4 @@
-from graphing import plotCentralDensity, plotStellarStructure
+from graphing import plotCentralDensity, plotStellarStructure, plotMomentofInertia
 from states.state import State
 from states.hydroState import HydroState
 from states.inertiaState import InertiaState
@@ -67,6 +67,8 @@ def integrateStar(rho: number, r0: number, a: number):
         totalPressures.append(step.TotalPressure)
 
     t = np.linspace(r0, a, len(integrationResults))
+    print("M0 = ",finalStep.M* 5e-34)
+    print("M2 = ", finalStep.M2* 5e-34)
     
     plotStellarStructure(t, densities, totalMasses, totalPressures)
 
@@ -82,3 +84,16 @@ def integrateInertia(rho: number, r0: number, a: number, k2: number):
     print("0th order MOI = ", finalStep.I0)
     print("2nd order MOI = ", finalStep.I2)
     print("total MOI = ", finalStep.TotalI)
+
+    t = np.linspace(r0, a, len(integrationResults))
+    I_0 = []
+    I_2 = []
+    I_total = []
+    for i in range(len(integrationResults)):
+        step = integrationResults[i]
+        I_0.append(step.I0)
+        I_2.append(step.I2)
+        I_total.append(step.TotalI)
+
+
+    plotMomentofInertia(t, I_0, I_2, I_total)
