@@ -18,7 +18,7 @@ class State:
         self.rho: number = rho
         self.stepIndex: number = 0
 
-    def integrateSelf(self, cls: type, start: number, end: number):
+    def integrateSelf(self, cls: type, start: number, end: number, stop_condition=None):
         self.stepIndex = 0
         
         t = np.linspace(start, end)
@@ -27,8 +27,15 @@ class State:
         paramValues = self.getIntegrationParamValues()
         y0 = np.array(paramValues)
 
-        rk45 = integrate.solve_ivp(
-            self.ODE, [start, end], y0, t_eval=t, first_step=start)
+        #impliments a version of the integrator using stop conditions, so it stops when p < 0
+        #instead of when we hit a specified radius
+        rk45 = None
+        if (stop_condition == None):
+            rk45 = integrate.solve_ivp(
+                self.ODE, [start, end], y0, t_eval=t, first_step=start)
+        else:
+            rk45 = integrate.solve_ivp(
+                self.ODE, [start, end], y0, t_eval=t, first_step=start, atol=1e-8, events=stop_condition)
 
         # creates a list of states
         length = len(rk45.y[0])
@@ -42,6 +49,11 @@ class State:
                 setattr(stateEntry, param, rk45.y[j][i])
                 j = j+1
             states.append(stateEntry)
+
+        #null checks to make sure everyhing exists to get the radius on termination
+        if (rk45.t_events != None and len(rk45.t_events) > 0 and len(rk45.t_events[0]) > 0):
+            return states, rk45.t_events[0][0]
+        
         return states
 
     @abstractmethod
@@ -60,4 +72,3 @@ class State:
     @abstractmethod
     def ODE(self, r: number, y):
         raise NotImplementedError()
-

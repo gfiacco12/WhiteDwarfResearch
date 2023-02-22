@@ -1,4 +1,4 @@
-from graphing import plotCentralDensity, plotStellarStructure, plotMomentofInertia
+from graphing import plotCentralDensity, plotMassRadiusRelation, plotStellarStructure, plotMomentofInertia
 from states.state import State
 from states.hydroState import HydroState
 from states.inertiaState import InertiaState
@@ -8,26 +8,51 @@ from globals import *
 
 # Density finder function
 
+#implimenting the stop conditions -- looks for sign changes, not 0 to terminate
+def eventAttr():
+    def decorator(func):
+        func.direction = 0
+        func.terminal = True
+        return func
+    return decorator
+
+@eventAttr()
+def stop_condition(r, y):
+    if (y[0] < 100):
+        return -1
+    return y[0]
+
 def findDensity(finalSolarMass: number, start: number, end: number, steps: number, r0: number, a: number):
+    final_r_withStop = []
+    final_masses_withStop = []
     final_masses = []  # list to store all final solar masses for each step in rho0
     rho0 = np.linspace(start, end, steps)
-    for rho in rho0:
+    for rhoI in rho0:
         # makes new state and lets you put in variable "rho"
-        state = HydroState(rho)
+        state = HydroState(rhoI)
         # calling function setInitialState in the instance created above
         state.setInitialState(r0)
         # calls integration function
         integrationResults: list[HydroState] = state.integrateSelf(HydroState, r0, a)
+
         # adds specifically last value for each final_corr_mass array
         final_masses.append(integrationResults[-1].TotalMass)
+
+        #trying to un-fix the radius, so mass and radius can vary with central
+        #density to get MvsR
+        integrationResultsWithStop: list[HydroState]
+        t: number
+        integrationResultsWithStop, t = state.integrateSelf(HydroState, r0, a, stop_condition)
+        final_masses_withStop.append(integrationResultsWithStop[-1].TotalMass)
+        final_r_withStop.append(t)
 
     # get the value of rho0 that we need for 0.6M_sun
     real_rho = np.interp(finalSolarMass, final_masses, rho0)
 
     plotCentralDensity(final_masses, rho0)
+    plotMassRadiusRelation(final_masses_withStop, final_r_withStop)
 
     return real_rho
-
 
 def integrateStar(rho: number, r0: number, a: number):
     state = HydroState(rho)

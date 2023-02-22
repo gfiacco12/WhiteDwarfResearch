@@ -13,6 +13,13 @@ def plotCentralDensity(masses: "list[number]", rhos: "list[number]"):
     plt.ylabel("Final Mass ($M_{\\odot}$)")
     plt.show()
 
+def plotMassRadiusRelation(masses: "list[number]", r: "list[number]"):
+    plt.figure()
+    plt.plot(r, masses)
+    plt.title("Mass v Radius Relationship for Polytropic WD")
+    plt.xlabel("Radius (cm)")
+    plt.ylabel("Final Mass ($M_{\\odot}$)")
+    plt.show()
 
 def plotStellarStructure(t, densities: "list[number]", totalMasses: "list[number]", totalPressures: "list[number]"):
     # plotting total quantities vs R - including second order corrections
