@@ -1,4 +1,4 @@
-from graphing import plotCentralDensity, plotMassRadiusRelation, plotStellarStructure, plotMomentofInertia
+from graphing import plotCentralDensity, plotMassRadiusRelation, plotStellarStructure, plotMomentofInertia, plotMassInertiaRelation
 from states.state import State
 from states.hydroState import HydroState
 from states.inertiaState import InertiaState
@@ -26,6 +26,8 @@ def findDensity(finalSolarMass: number, start: number, end: number, steps: numbe
     final_r_withStop = []
     final_masses_withStop = []
     final_masses = []  # list to store all final solar masses for each step in rho0
+    final_I_withStop = []
+
     rho0 = np.linspace(start, end, steps)
     for rhoI in rho0:
         # makes new state and lets you put in variable "rho"
@@ -40,17 +42,20 @@ def findDensity(finalSolarMass: number, start: number, end: number, steps: numbe
 
         #trying to un-fix the radius, so mass and radius can vary with central
         #density to get MvsR
+        #also get 0th order moment of inertia
         integrationResultsWithStop: list[HydroState]
         t: number
         integrationResultsWithStop, t = state.integrateSelf(HydroState, r0, a, stop_condition)
         final_masses_withStop.append(integrationResultsWithStop[-1].TotalMass)
         final_r_withStop.append(t)
+        final_I_withStop.append(integrationResultsWithStop[-1].I0)
 
     # get the value of rho0 that we need for 0.6M_sun
     real_rho = np.interp(finalSolarMass, final_masses, rho0)
 
-    plotCentralDensity(final_masses, rho0)
+    #plotCentralDensity(final_masses, rho0)
     plotMassRadiusRelation(final_masses_withStop, final_r_withStop)
+    plotMassInertiaRelation(final_masses_withStop, final_I_withStop)
 
     return real_rho
 
@@ -121,4 +126,4 @@ def integrateInertia(rho: number, r0: number, a: number, k2: number):
         I_total.append(step.TotalI)
 
 
-    plotMomentofInertia(t, I_0, I_2, I_total)
+    #plotMomentofInertia(t, I_0, I_2, I_total)

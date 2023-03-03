@@ -42,12 +42,13 @@ class HydroState(State):
         self.X_h: number = Bh * r0**4
         self.Phi_h: number = A*r0**2
         self.Phi_p: number = self.Phi_h
+        self.I0: number = (8*np.pi/15) * rho * r0**5
 
     def getIntegrationParamNames(self):
-        return ["rho", "M", "P", "P2", "M2", "X_p", "Phi_p", "X_h", "Phi_h"]
+        return ["rho", "M", "P", "P2", "M2", "X_p", "Phi_p", "X_h", "Phi_h", "I0"]
 
     def getIntegrationParamValues(self):
-        return [self.rho, self.M, self.P, self.P2, self.M2, self.X_p, self.Phi_p, self.X_h, self.Phi_h]
+        return [self.rho, self.M, self.P, self.P2, self.M2, self.X_p, self.Phi_p, self.X_h, self.Phi_h, self.I0]
 
     def ODE(self, r: number, y):
         dY = np.zeros_like(y)
@@ -78,4 +79,5 @@ class HydroState(State):
         # l=2 homogeneous solution
         dY[7] = -(2*G*M/r**2)*Phi_h
         dY[8] = ((4*np.pi*r**2*rho/M) - (2/r))*Phi_h - ((2*Xh)/(G*M))
+        dY[9] = (8*np.pi/3) * rho * r**4
         return (dY)
