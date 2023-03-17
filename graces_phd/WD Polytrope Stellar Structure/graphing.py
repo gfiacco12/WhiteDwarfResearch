@@ -45,11 +45,12 @@ def plotMassInertiaRelation(masses: "list[number]", I0: "list[number]"):
     print("Analytic result:",poly_simple)   
 
     plt.figure()
+    plt.rcParams.update({'font.size': 22})
     plt.loglog(masses, I0, label="Numerical")
     plt.loglog(masses, Im, label="Kuns Scaling Relation")
-    plt.title("Mass v I0 Relationship for Polytropic WD")
+    plt.title("Mass v $I^{(0)}$ Relationship for Polytropic WD")
     plt.xlabel("Mass ($M_{\\odot}$)")
-    plt.ylabel("I0")
+    plt.ylabel("$I^{(0)}$")
     plt.legend()
     plt.show()
 
