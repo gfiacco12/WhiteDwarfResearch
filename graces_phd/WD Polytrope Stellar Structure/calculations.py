@@ -54,8 +54,8 @@ def findDensity(finalSolarMass: number, start: number, end: number, steps: numbe
     real_rho = np.interp(finalSolarMass, final_masses, rho0)
 
     #plotCentralDensity(final_masses, rho0)
-    plotMassRadiusRelation(final_masses_withStop, final_r_withStop)
-    plotMassInertiaRelation(final_masses_withStop, final_I_withStop)
+    #plotMassRadiusRelation(final_masses_withStop, final_r_withStop)
+    # plotMassInertiaRelation(final_masses_withStop, final_I_withStop)
 
     return real_rho
 
@@ -126,4 +126,23 @@ def integrateInertia(rho: number, r0: number, a: number, k2: number):
         I_total.append(step.TotalI)
 
 
-    #plotMomentofInertia(t, I_0, I_2, I_total)
+def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: number, a: number):
+    final_masses_withStop = []
+    final_I_withStop = []
+
+    rho0 = np.linspace(start, end, steps)
+    for rhoI in rho0:
+        # makes new state and lets you put in variable "rho"
+        state = InertiaState(rhoI)
+        # calling function setInitialState in the instance created above
+        state.setInitialState(r0)
+
+        #trying to un-fix the radius, so mass and radius can vary with central
+        #density to get MvsR
+        #also get 0th order moment of inertia
+        integrationResultsWithStop: list[InertiaState]
+        integrationResultsWithStop, t = state.integrateSelf(InertiaState, r0, a, stop_condition)
+        final_masses_withStop.append(integrationResultsWithStop[-1].TotalMass)
+        final_I_withStop.append(integrationResultsWithStop[-1].I0)
+
+    plotMassInertiaRelation(final_masses_withStop, final_I_withStop)

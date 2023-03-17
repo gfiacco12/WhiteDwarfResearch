@@ -8,6 +8,10 @@ class InertiaState(State):
     @property
     def SolarMass(self) -> number:
         return self.M * 5e-34
+    
+    @property
+    def TotalMass(self) -> number:
+        return (self.M + self.M2) * 5e-34
 
     @property
     def TotalI(self) -> number:
@@ -18,7 +22,7 @@ class InertiaState(State):
         super().__init__(rho)
 
     #set initial state for moments of inertia integration
-    def setInitialState(self, r0: number, K2: number):
+    def setInitialState(self, r0: number, K2: number = None):
         rho = self.rho
         self.K2 = K2
         # initial state
@@ -75,12 +79,16 @@ class InertiaState(State):
         dY[7] = -(2*G*M/r**2)*Phi_h
         dY[8] = ((4*np.pi*r**2*rho/M) - (2/r))*Phi_h - ((2*Xh)/(G*M))
 
-        Zeta0 = (r**2 / (G * M) ) * p2
-        Zeta2 = - (r**2/(G*M))*((omg**2 * r**2 / 3) + (Phi + self.K2*Phi_h))
-
         # 0th order moment of inertia
         dY[9] = (8*np.pi/3) * rho * r**4
-        # 2nd order correction moment of inertia
-        dY[10] = (8*np.pi/3) * ((1/5)* Zeta2 - Zeta0) * dY[0] * r**4
 
+        if (self.K2 != None):
+            Zeta0 = (r**2 / (G * M) ) * p2
+            Zeta2 = - (r**2/(G*M))*((omg**2 * r**2 / 3) + (Phi + self.K2*Phi_h))
+
+            # 2nd order correction moment of inertia
+            dY[10] = (8*np.pi/3) * ((1/5)* Zeta2 - Zeta0) * dY[0] * r**4
+        else:
+            dY[10] = 0
+            
         return (dY)
