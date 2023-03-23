@@ -2,6 +2,7 @@
 from matplotlib import pyplot as plt
 from numpy import number
 import numpy as np
+import matplotlib.ticker
 
 # plotting central density vs final mass
 
@@ -16,7 +17,7 @@ def plotCentralDensity(masses: "list[number]", rhos: "list[number]"):
 
 def plotMassRadiusRelation(masses: "list[number]", r: "list[number]"):
     #plot the scaling relation from Kuns 2020
-    rm = 10**9 * (np.asarray(masses) )**(-1/3)
+    rm = 10**9 * (np.asarray(masses) / 0.6 )**(-1/3)
 
     #get the polynomial fit for the MvR relation 
     poly = np.polyfit(np.log(masses), np.log(r), 1)
@@ -24,9 +25,14 @@ def plotMassRadiusRelation(masses: "list[number]", r: "list[number]"):
     print("Numerical result:",poly)
     print("Analytic result:",poly_simple)   
 
-    plt.figure()
-    plt.loglog(r, masses, label="Numerical")
-    plt.loglog(rm, masses, label="Kuns Scaling Relation")
+    fig1, ax1 = plt.subplots()
+    ax1.loglog(r, masses, label="Numerical")
+    ax1.loglog(rm, masses, label="Kuns Scaling Relation")
+    
+    ax1.set_yticks([0.5, 1, 2])
+    ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
+    ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
+
     plt.title("Mass v Radius Relationship for Polytropic WD")
     plt.xlabel("Radius (cm)")
     plt.ylabel("Final Mass ($M_{\\odot}$)")
@@ -37,17 +43,24 @@ def plotMassInertiaRelation(masses: "list[number]", I0: "list[number]"):
     masses.sort()
     I0.sort() 
 
-    Im = 3.1e50 * (np.asarray(masses) / 0.6)**(1/3)
+    Im = 3.1e50 * (np.asarray(masses) /0.6)**(1/3)
     #get the polynomial fit for the MvR relation 
     poly = np.polyfit(np.log(masses), np.log(I0), 1)
     poly_simple = np.polyfit(np.log(masses), np.log(Im), 1)
     print("Numerical result:",poly)
     print("Analytic result:",poly_simple)   
 
-    plt.figure()
-    plt.rcParams.update({'font.size': 22})
-    plt.loglog(masses, I0, label="Numerical")
-    plt.loglog(masses, Im, label="Kuns Scaling Relation")
+    fig1, ax1 = plt.subplots()
+    plt.rcParams.update({'font.size': 19})
+    ax1.loglog(masses, I0, label="Numerical")
+    ax1.loglog(masses, Im, label="Kuns Scaling Relation")
+
+    ax1.set_xticks([0.5, 1,2])
+    ax1.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
+    ax1.set_yticks([5e50, 1e51, 2e51])
+    ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
+
     plt.title("Mass v $I^{(0)}$ Relationship for Polytropic WD")
     plt.xlabel("Mass ($M_{\\odot}$)")
     plt.ylabel("$I^{(0)}$")
