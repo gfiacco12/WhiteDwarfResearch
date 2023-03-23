@@ -26,17 +26,18 @@ def plotMassRadiusRelation(masses: "list[number]", r: "list[number]"):
     print("Analytic result:",poly_simple)   
 
     fig1, ax1 = plt.subplots()
-    ax1.loglog(r, masses, label="Numerical")
-    ax1.loglog(rm, masses, label="Kuns Scaling Relation")
+    plt.rcParams.update({'font.size': 19})
+    ax1.loglog(r, masses, label="Numerical", linewidth=2)
+    ax1.loglog(rm, masses, label="Kuns Scaling Relation", linewidth=2)
     
     ax1.set_yticks([0.5, 1, 2])
     ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
     ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
 
     plt.title("Mass v Radius Relationship for Polytropic WD")
-    plt.xlabel("Radius (cm)")
-    plt.ylabel("Final Mass ($M_{\\odot}$)")
-    plt.legend()
+    plt.xlabel("Radius (cm)", fontsize=16)
+    plt.ylabel("Final Mass ($M_{\\odot}$)",fontsize=16)
+    plt.legend(fontsize=15,loc='upper right')
     plt.show()
 
 def plotMassInertiaRelation(masses: "list[number]", I0: "list[number]"):
@@ -52,8 +53,8 @@ def plotMassInertiaRelation(masses: "list[number]", I0: "list[number]"):
 
     fig1, ax1 = plt.subplots()
     plt.rcParams.update({'font.size': 19})
-    ax1.loglog(masses, I0, label="Numerical")
-    ax1.loglog(masses, Im, label="Kuns Scaling Relation")
+    ax1.loglog(masses, I0, label="Numerical", linewidth=2)
+    ax1.loglog(masses, Im, label="Kuns Scaling Relation", linewidth=2)
 
     ax1.set_xticks([0.5, 1,2])
     ax1.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
@@ -62,8 +63,8 @@ def plotMassInertiaRelation(masses: "list[number]", I0: "list[number]"):
     ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
 
     plt.title("Mass v $I^{(0)}$ Relationship for Polytropic WD")
-    plt.xlabel("Mass ($M_{\\odot}$)")
-    plt.ylabel("$I^{(0)}$")
+    plt.xlabel("Mass ($M_{\\odot}$)",fontsize=16)
+    plt.ylabel("$I^{(0)}$",fontsize=16)
     plt.legend()
     plt.show()
 
