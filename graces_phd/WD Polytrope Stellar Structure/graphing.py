@@ -30,7 +30,7 @@ def plotMassRadiusRelation(masses: "list[number]", r: "list[number]"):
     ax1.loglog(r, masses, label="Numerical", linewidth=2)
     ax1.loglog(rm, masses, label="Kuns Scaling Relation", linewidth=2)
     
-    ax1.set_yticks([0.5, 1, 2])
+    ax1.set_yticks([0.3,0.5, 1, 2])
     ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
     ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
 
@@ -43,20 +43,29 @@ def plotMassRadiusRelation(masses: "list[number]", r: "list[number]"):
 def plotMassInertiaRelation(masses: "list[number]", I0: "list[number]"):
     masses.sort()
     I0.sort() 
+    mass_range = []
+    I0_range = []
+    for i in range(len(masses)):
+        if masses[i] >= 0.29:
+            mass_range.append(masses[i])
+            I0_range.append(I0[i])
 
     Im = 3.1e50 * (np.asarray(masses) /0.6)**(1/3)
     #get the polynomial fit for the MvR relation 
     poly = np.polyfit(np.log(masses), np.log(I0), 1)
+    poly_cut = np.polyfit(np.log(mass_range), np.log(I0_range),1)
     poly_simple = np.polyfit(np.log(masses), np.log(Im), 1)
     print("Numerical result:",poly)
+    print("Numerical Fixed result:", poly_cut)
     print("Analytic result:",poly_simple)   
 
     fig1, ax1 = plt.subplots()
     plt.rcParams.update({'font.size': 19})
     ax1.loglog(masses, I0, label="Numerical", linewidth=2)
+    #ax1.loglog(mass_range, I0_range, label="Numerical", linewidth=2)
     ax1.loglog(masses, Im, label="Kuns Scaling Relation", linewidth=2)
 
-    ax1.set_xticks([0.5, 1,2])
+    ax1.set_xticks([0.3,0.5, 1,2])
     ax1.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
     ax1.set_yticks([5e50, 1e51, 2e51])
     ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
