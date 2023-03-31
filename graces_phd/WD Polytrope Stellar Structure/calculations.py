@@ -53,8 +53,8 @@ def findDensity(finalSolarMass: number, start: number, end: number, steps: numbe
     # get the value of rho0 that we need for 0.6M_sun
     real_rho = np.interp(finalSolarMass, final_masses, rho0)
 
-    plotCentralDensity(final_masses, rho0)
-    plotMassRadiusRelation(final_masses_withStop, final_r_withStop)
+   # plotCentralDensity(final_masses, rho0)
+    #plotMassRadiusRelation(final_masses_withStop, final_r_withStop)
     # plotMassInertiaRelation(final_masses_withStop, final_I_withStop)
 
     return real_rho
@@ -146,4 +146,4 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
         final_masses_withStop.append(integrationResultsWithStop[-1].TotalMass)
         final_I_withStop.append(integrationResultsWithStop[-1].I0)
 
-    plotMassInertiaRelation(final_masses_withStop, final_I_withStop)
+    #plotMassInertiaRelation(final_masses_withStop, final_I_withStop)

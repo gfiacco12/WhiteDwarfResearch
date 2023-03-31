@@ -13,7 +13,7 @@ def plotCentralDensity(masses: "list[number]", rhos: "list[number]"):
     plt.figure()
     plt.plot(rhos, masses)
     plt.title("Mass v Central Density for Polytropic EOS")
-    plt.xlabel("Central Density $\\rho_{0}$")
+    plt.xlabel("Central Density $\\rho_{0}$ ($g/cm^{3}$)")
     plt.ylabel("Final Mass ($M_{\\odot}$)")
     plt.show()
 
@@ -33,9 +33,9 @@ def plotMassRadiusRelation(masses: "list[number]", r: "list[number]"):
     ax1.loglog(r, masses, label="Numerical", linewidth=2)
     ax1.loglog(rm, masses, label="Kuns Scaling Relation", linewidth=2)
     
-    # ax1.set_yticks([0.3,0.5, 1, 2])
-    # ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
-    # ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
+    ax1.set_yticks([0.1,0.5, 1])
+    ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
+    ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
 
     plt.title("Mass v Radius Relationship for Polytropic WD")
     plt.xlabel("Radius (cm)", fontsize=16)
@@ -68,15 +68,14 @@ def plotMassInertiaRelation(masses: "list[number]", I0: "list[number]"):
     #ax1.loglog(mass_range, I0_range, label="Numerical", linewidth=2)
     ax1.loglog(masses, Im, label="Kuns Scaling Relation", linewidth=2)
 
-    # ax1.set_xticks([0.3,0.5, 1,2])
-    # ax1.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
-    # ax1.set_yticks([5e50, 1e51, 2e51])
-    # ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-    # ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
+    ax1.set_xticks([0.1,0.5, 1])
+    ax1.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
+    ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
 
     plt.title("Mass v $I^{(0)}$ Relationship for Polytropic WD")
     plt.xlabel("Mass ($M_{\\odot}$)",fontsize=16)
-    plt.ylabel("$I^{(0)}$",fontsize=16)
+    plt.ylabel("$I^{(0)}$ ($g cm^{2}$)",fontsize=16)
     plt.legend()
     plt.show()
 
@@ -95,7 +94,7 @@ def plotStellarStructure(t, densities: "list[number]", totalMasses: "list[number
     ax2.set_xlabel('Radius (cm)')
     ax3.plot(t, totalPressures)
     ax3.set_title("p vs r")
-    ax3.set_ylabel('Pressure')
+    ax3.set_ylabel('Pressure ($g cm^{-1} s^{-2}$)')
     ax3.set_xlabel('Radius (cm)')
     plt.show()
 

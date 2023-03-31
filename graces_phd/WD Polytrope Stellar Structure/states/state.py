@@ -21,7 +21,7 @@ class State:
     def integrateSelf(self, cls: type, start: number, end: number, stop_condition=None):
         self.stepIndex = 0
         
-        t = np.linspace(start, end)
+        t = np.linspace(start, end, 500)
 
         paramNames = self.getIntegrationParamNames()
         paramValues = self.getIntegrationParamValues()

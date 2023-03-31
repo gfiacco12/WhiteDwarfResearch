@@ -15,4 +15,4 @@ def main(r0: number, a: number):
     integrateInertia(rho, r0, a, K2)
     getFinalMassesVsFinalInertia(1e03, 0.5e07, 800, r0, a)
 
-main(0.1, 7e9)
+main(0.1, 5e9)
