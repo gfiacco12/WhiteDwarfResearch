@@ -8,6 +8,8 @@ import matplotlib.ticker
 
 
 def plotCentralDensity(masses: "list[number]", rhos: "list[number]"):
+    masses.sort()
+    rhos.sort()
     plt.figure()
     plt.plot(rhos, masses)
     plt.title("Mass v Central Density for Polytropic EOS")
@@ -17,6 +19,7 @@ def plotCentralDensity(masses: "list[number]", rhos: "list[number]"):
 
 def plotMassRadiusRelation(masses: "list[number]", r: "list[number]"):
     #plot the scaling relation from Kuns 2020
+    masses.sort()
     rm = 10**9 * (np.asarray(masses) / 0.6 )**(-1/3)
 
     #get the polynomial fit for the MvR relation 
@@ -30,9 +33,9 @@ def plotMassRadiusRelation(masses: "list[number]", r: "list[number]"):
     ax1.loglog(r, masses, label="Numerical", linewidth=2)
     ax1.loglog(rm, masses, label="Kuns Scaling Relation", linewidth=2)
     
-    ax1.set_yticks([0.3,0.5, 1, 2])
-    ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
-    ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
+    # ax1.set_yticks([0.3,0.5, 1, 2])
+    # ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
+    # ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
 
     plt.title("Mass v Radius Relationship for Polytropic WD")
     plt.xlabel("Radius (cm)", fontsize=16)
@@ -65,11 +68,11 @@ def plotMassInertiaRelation(masses: "list[number]", I0: "list[number]"):
     #ax1.loglog(mass_range, I0_range, label="Numerical", linewidth=2)
     ax1.loglog(masses, Im, label="Kuns Scaling Relation", linewidth=2)
 
-    ax1.set_xticks([0.3,0.5, 1,2])
-    ax1.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
-    ax1.set_yticks([5e50, 1e51, 2e51])
-    ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-    ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
+    # ax1.set_xticks([0.3,0.5, 1,2])
+    # ax1.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())    
+    # ax1.set_yticks([5e50, 1e51, 2e51])
+    # ax1.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    # ax1.set_aspect(1.0/ax1.get_data_ratio(), adjustable='box')
 
     plt.title("Mass v $I^{(0)}$ Relationship for Polytropic WD")
     plt.xlabel("Mass ($M_{\\odot}$)",fontsize=16)

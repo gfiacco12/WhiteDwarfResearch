@@ -53,7 +53,7 @@ def findDensity(finalSolarMass: number, start: number, end: number, steps: numbe
     # get the value of rho0 that we need for 0.6M_sun
     real_rho = np.interp(finalSolarMass, final_masses, rho0)
 
-    #plotCentralDensity(final_masses, rho0)
+    plotCentralDensity(final_masses, rho0)
     plotMassRadiusRelation(final_masses_withStop, final_r_withStop)
     # plotMassInertiaRelation(final_masses_withStop, final_I_withStop)
 
@@ -99,8 +99,9 @@ def integrateStar(rho: number, r0: number, a: number):
     t = np.linspace(r0, a, len(integrationResults))
     print("M0 = ",finalStep.M* 5e-34)
     print("M2 = ", finalStep.M2* 5e-34)
+    print(len(integrationResults))
     
-    #plotStellarStructure(t, densities, totalMasses, totalPressures)
+    plotStellarStructure(t, densities, totalMasses, totalPressures)
 
     return K2
 
