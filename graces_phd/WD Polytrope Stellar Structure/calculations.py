@@ -1,4 +1,4 @@
-from graphing import plotCentralDensity, plotMassRadiusRelation, plotStellarStructure, plotMomentofInertia, plotMassInertiaRelation
+from graphing import plotCentralDensity, plotMassRadiusRelation, plotStellarStructure, plotMassInertiaRelation, plot3DMassRadiusVelocity
 from states.state import State
 from states.hydroState import HydroState
 from states.inertiaState import InertiaState
@@ -54,15 +54,35 @@ def findDensity(finalSolarMass: number, start: number, end: number, steps: numbe
     real_rho = np.interp(finalSolarMass, final_masses, rho0)
 
    # plotCentralDensity(final_masses, rho0)
-    plotMassRadiusRelation(final_masses_withStop, final_r_withStop)
+    #plotMassRadiusRelation(final_masses_withStop, final_r_withStop)
     # plotMassInertiaRelation(final_masses_withStop, final_I_withStop)
 
     return real_rho
 
 def integrateStar(rho: number, r0: number, a: number):
-    state = HydroState(rho)
-    state.setInitialState(r0)
-    integrationResults: list[HydroState] = state.integrateSelf(HydroState, r0, a)
+    initialstate = HydroState(rho)
+    initialstate.setInitialState(r0)
+    integrationResults: list[HydroState] = initialstate.integrateSelf(HydroState, r0, a)
+    t = np.linspace(r0, a, len(integrationResults))
+
+    #impliment scaling for velocities
+    # r o tm
+    omega = np.linspace(omg, 0, 20)
+    totalMasses = []
+    for i in range(len(integrationResults)):
+        state = integrationResults[i]
+        r = t[i]
+        totalMasses.append([])
+        for j in range(len(omega)):
+            if j == 0:
+                totalMasses[i].append(state.getScaledTotalMass(omega[j], omg))
+            else:
+                totalMasses[i].append(state.getScaledTotalMass(omega[j], omega[j-1]))
+                
+            
+    plot3DMassRadiusVelocity(t, totalMasses, omega)
+
+
     finalStep = integrationResults[-1]
 
     # note: mass is in g not M_sun here
@@ -96,10 +116,13 @@ def integrateStar(rho: number, r0: number, a: number):
         totalMasses.append(step.TotalMass)
         totalPressures.append(step.TotalPressure)
 
-    t = np.linspace(r0, a, len(integrationResults))
     print("M0 = ",finalStep.M* 5e-34)
     print("M2 = ", finalStep.M2* 5e-34)
-    print(len(integrationResults))
+    
+    print("Test Velocity = ", omg)
+    print("Keplarian Velocity = ", omg_K)
+    print("Equatorial Radius = ", re)
+
     
     #plotStellarStructure(t, densities, totalMasses, totalPressures)
 
@@ -111,7 +134,7 @@ def integrateInertia(rho: number, r0: number, a: number, k2: number):
     integrationResults: list[InertiaState] = state.integrateSelf(InertiaState, r0, a)
     finalStep = integrationResults[-1]
 
-    print("Inertia Integrator final mass:", finalStep.SolarMass)
+    #print("Inertia Integrator final mass:", finalStep.SolarMass)
     print("0th order MOI = ", finalStep.I0)
     print("2nd order MOI = ", finalStep.I2)
     print("total MOI = ", finalStep.TotalI)

@@ -3,7 +3,7 @@ from calculations import findDensity, integrateStar, integrateInertia, getFinalM
 
 
 def main(r0: number, a: number):
-    # Function to calculate central density for Polytropic White Dwarf to achieve specific final mass
+    # Function to calculate central density for Polytropic White Dwarf to achieve specific final massa2
     # INPUTS: Desired final mass (in Solar Mass Units), range of central density values (start, stop, number of steps)
     # INPUTS CONT: Initial radius r0, surface radius of star
     rho = findDensity(0.6, 1e03, 0.5e07, 800, r0, a)
@@ -14,5 +14,5 @@ def main(r0: number, a: number):
 
     integrateInertia(rho, r0, a, K2)
     getFinalMassesVsFinalInertia(1e03, 0.5e07, 800, r0, a)
-
+    
 main(0.1, 5e9)

@@ -44,6 +44,9 @@ class HydroState(State):
         self.Phi_p: number = self.Phi_h
         self.I0: number = (8*np.pi/15) * rho * r0**5
 
+    def getScaledTotalMass(self, omega_new, omega_old):
+        return ((((omega_new/omega_old)**2) * self.M2) + self.M) * 5e-34
+
     def getIntegrationParamNames(self):
         return ["rho", "M", "P", "P2", "M2", "X_p", "Phi_p", "X_h", "Phi_h", "I0"]
 

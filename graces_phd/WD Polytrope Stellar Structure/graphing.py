@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from numpy import number
 import numpy as np
 import matplotlib.ticker
+from mpl_toolkits.mplot3d import axes3d
 
 # plotting central density vs final mass
 
@@ -106,19 +107,16 @@ def plotStellarStructure(t, densities: "list[number]", totalMasses: "list[number
     ax3.set_xlabel('Radius (cm)')
     plt.show()
 
-def plotMomentofInertia(t, I0: "list[number]", I2: "list[number]", totalI: "list[number]"):
-    #plotting the different moments of inertia
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
-    ax1.plot(t, I0)
-    ax1.set_title("$I^{0}$ vs r")
-    ax1.set_xlabel("Radius (cm)")
-    ax1.set_ylabel("Oth Order I (g*cm^2)")
-    ax2.plot(t, I2)
-    ax2.set_title("$I^{2}$ vs r")
-    ax2.set_ylabel('Rotational Correction to I (g*cm^2)')
-    ax2.set_xlabel('Radius (cm)')
-    ax3.plot(t, totalI)
-    ax3.set_title("Total Moment of Inertia vs r")
-    ax3.set_ylabel('Total I (g*cm^2)')
-    ax3.set_xlabel('Radius (cm)')
+def plot3DMassRadiusVelocity(t, totalMasses, omega):
+    ax = plt.figure().add_subplot(projection='3d')
+
+    totalMasses.sort()
+    x = np.array(omega)
+    y = np.array(t)
+    z = np.array(totalMasses)
+
+    X, Y = np.meshgrid(x, y)
+
+    # Plot the 3D surface
+    ax.plot_surface(X, Y, z, edgecolor='royalblue')
     plt.show()
