@@ -119,4 +119,25 @@ def plot3DMassRadiusVelocity(t, totalMasses, omega):
 
     # Plot the 3D surface
     ax.plot_surface(X, Y, z, edgecolor='royalblue')
+    ax.set_xlabel('Rotational Velocity', labelpad=20)
+    ax.set_ylabel('Radius', labelpad=20)
+    ax.set_zlabel('Mass', labelpad=20)
+    ax.set_title("Mass-Radius-Spin Relation")
+    plt.show()
+
+def plot3DMassInertiaVelocity(totalMasses, totalInertia, omega):
+    ax = plt.figure().add_subplot(projection='3d')
+
+    totalMasses.sort()
+    totalInertia.sort()
+    x = np.array(omega)
+    y = np.array(totalMasses)
+    z = np.array(totalInertia)
+
+    # Plot the 3D surface
+    ax.plot_surface(x, y, z, edgecolor='royalblue')
+    ax.set_xlabel('Rotational Velocity', labelpad=20)
+    ax.set_ylabel('Mass', labelpad=20)
+    ax.set_zlabel('Inertia', labelpad=20)
+    ax.set_title("Mass-Inertia-Spin Relation")
     plt.show()

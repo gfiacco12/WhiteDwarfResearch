@@ -43,6 +43,12 @@ class InertiaState(State):
         self.I0: number = (8*np.pi/15) * rho * r0**5
         self.I2: number = 0
 
+    def getScaledTotalMass(self, omega_new, omega_old):
+        return ((((omega_new/omega_old)**2) * self.M2) + self.M) * 5e-34
+    
+    def getScaledTotalInertia(self, omega_new, omega_old):
+        return ((((omega_new/omega_old)**2) * self.I2) + self.I0)
+    
     def getIntegrationParamNames(self):
         return ["rho", "M", "P", "P2", "M2", "X_p", "Phi_p", "X_h", "Phi_h", "I0", "I2"]
     
