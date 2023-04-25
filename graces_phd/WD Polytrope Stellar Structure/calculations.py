@@ -1,4 +1,4 @@
-from graphing import plotCentralDensity, plotMassRadiusRelation, plotStellarStructure, plotMassInertiaRelation, plot3DMassRadiusVelocity
+from graphing import plotCentralDensity, plotMassRadiusRelation, plotStellarStructure, plotMassInertiaRelation, plot3DMassRadiusVelocity,plot3DMassInertiaVelocity
 from states.state import State
 from states.hydroState import HydroState
 from states.inertiaState import InertiaState
@@ -67,7 +67,7 @@ def integrateStar(rho: number, r0: number, a: number):
 
     #impliment scaling for velocities
     # r o tm
-    omega = np.linspace(omg, 0, 20)
+    """     omega = np.linspace(omg, 0, 20)
     totalMasses = []
     for i in range(len(integrationResults)):
         state = integrationResults[i]
@@ -77,11 +77,9 @@ def integrateStar(rho: number, r0: number, a: number):
             if j == 0:
                 totalMasses[i].append(state.getScaledTotalMass(omega[j], omg))
             else:
-                totalMasses[i].append(state.getScaledTotalMass(omega[j], omega[j-1]))
-                
+                totalMasses[i].append(state.getScaledTotalMass(omega[j], omega[j-1])) """
             
-    plot3DMassRadiusVelocity(t, totalMasses, omega)
-
+    #plot3DMassRadiusVelocity(t, totalMasses, omega)
 
     finalStep = integrationResults[-1]
 
@@ -123,15 +121,14 @@ def integrateStar(rho: number, r0: number, a: number):
     print("Keplarian Velocity = ", omg_K)
     print("Equatorial Radius = ", re)
 
-    
     #plotStellarStructure(t, densities, totalMasses, totalPressures)
 
     return K2
 
 def integrateInertia(rho: number, r0: number, a: number, k2: number):
-    state = InertiaState(rho)
-    state.setInitialState(r0, k2)
-    integrationResults: list[InertiaState] = state.integrateSelf(InertiaState, r0, a)
+    initialstate = InertiaState(rho)
+    initialstate.setInitialState(r0, k2)
+    integrationResults: list[InertiaState] = initialstate.integrateSelf(InertiaState, r0, a)
     finalStep = integrationResults[-1]
 
     #print("Inertia Integrator final mass:", finalStep.SolarMass)
@@ -157,16 +154,33 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
     rho0 = np.linspace(start, end, steps)
     for rhoI in rho0:
         # makes new state and lets you put in variable "rho"
-        state = InertiaState(rhoI)
+        initialstate = InertiaState(rhoI)
         # calling function setInitialState in the instance created above
-        state.setInitialState(r0)
+        initialstate.setInitialState(r0)
 
         #trying to un-fix the radius, so mass and radius can vary with central
         #density to get MvsR
         #also get 0th order moment of inertia
         integrationResultsWithStop: list[InertiaState]
-        integrationResultsWithStop, t = state.integrateSelf(InertiaState, r0, a, stop_condition)
+        integrationResultsWithStop, t = initialstate.integrateSelf(InertiaState, r0, a, stop_condition)
         final_masses_withStop.append(integrationResultsWithStop[-1].TotalMass)
-        final_I_withStop.append(integrationResultsWithStop[-1].I0)
-
+        final_I_withStop.append(integrationResultsWithStop[-1].TotalI)
+    
+    #obtain scaling for angular velocity for M and I2
+    omega = np.linspace(omg, 0, 20) # Note: eventually convert this to frequencies not angular
+    finalScaledMasses = []
+    finalScaledInertia = []
+    for i in range(len(integrationResultsWithStop)):
+        state = integrationResultsWithStop[i]
+        finalScaledMasses.append([])
+        finalScaledInertia.append([])
+        for j in range(len(omega)):
+            if j == 0:
+                finalScaledMasses[i].append(state.getScaledTotalMass(omega[j], omg))
+                finalScaledInertia[i].append(state.getScaledTotalInertia(omega[j], omg))
+            else:
+                finalScaledMasses[i].append(state.getScaledTotalMass(omega[j], omega[j-1]))
+                finalScaledInertia[i].append(state.getScaledTotalInertia(omega[j], omega[j-1]))
+    plot3DMassInertiaVelocity(finalScaledMasses, finalScaledInertia, omega)
+    
     #plotMassInertiaRelation(final_masses_withStop, final_I_withStop)
