@@ -136,8 +136,8 @@ def plot3DMassInertiaVelocity(totalMasses, totalInertia, omega):
 
     # Plot the 3D surface
     ax.plot_surface(x, y, z, edgecolor='royalblue')
-    ax.set_xlabel('Rotational Velocity', labelpad=20)
-    ax.set_ylabel('Mass', labelpad=20)
-    ax.set_zlabel('Inertia', labelpad=20)
+    ax.set_xlabel('Rotational Velocity - x', labelpad=20)
+    ax.set_ylabel('Mass - y', labelpad=20)
+    ax.set_zlabel('Inertia - z', labelpad=20)
     ax.set_title("Mass-Inertia-Spin Relation")
     plt.show()

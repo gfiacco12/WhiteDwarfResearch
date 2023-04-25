@@ -1,3 +1,4 @@
+from helper import getScaledTotalMass, getScaledTotalInertia
 from states.state import State
 from numpy import number
 from globals import *
@@ -8,6 +9,10 @@ class InertiaState(State):
     @property
     def SolarMass(self) -> number:
         return self.M * 5e-34
+    
+    @property
+    def SolarMass2(self) -> number:
+        return self.M2 * 5e-34
     
     @property
     def TotalMass(self) -> number:
@@ -44,10 +49,10 @@ class InertiaState(State):
         self.I2: number = 0
 
     def getScaledTotalMass(self, omega_new, omega_old):
-        return ((((omega_new/omega_old)**2) * self.M2) + self.M) * 5e-34
+        return getScaledTotalMass(self.M, self.M2, omega_new, omega_old)
     
     def getScaledTotalInertia(self, omega_new, omega_old):
-        return ((((omega_new/omega_old)**2) * self.I2) + self.I0)
+        return getScaledTotalInertia(self.I0, self.I2, omega_new, omega_old)
     
     def getIntegrationParamNames(self):
         return ["rho", "M", "P", "P2", "M2", "X_p", "Phi_p", "X_h", "Phi_h", "I0", "I2"]
