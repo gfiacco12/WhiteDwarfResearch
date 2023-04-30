@@ -1,4 +1,4 @@
-from helper import getScaledTotalMass, getScaledTotalInertia
+from helper import getScaledMass2, getScaledInertia2, getScaledTotalMass, getScaledTotalInertia
 from graphing import plotCentralDensity, plotMassRadiusRelation, plotStellarStructure, plotMassInertiaRelation, plot3DMassRadiusVelocity,plot3DMassInertiaVelocity
 from states.state import State
 from states.hydroState import HydroState
@@ -148,7 +148,7 @@ def integrateInertia(rho: number, r0: number, a: number, k2: number):
         I_total.append(step.TotalI)
 
 
-def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: number, a: number):
+def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: number, a: number, K2: number):
     final_masses_withStop = []
     final_m_withStop = []
     final_m2_withStop = []
@@ -161,7 +161,7 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
         # makes new state and lets you put in variable "rho"
         initialstate = InertiaState(rhoI)
         # calling function setInitialState in the instance created above
-        initialstate.setInitialState(r0)
+        initialstate.setInitialState(r0, K2)
 
         #trying to un-fix the radius, so mass and radius can vary with central
         #density to get MvsR
@@ -169,8 +169,8 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
         integrationResultsWithStop: list[InertiaState]
         integrationResultsWithStop, t = initialstate.integrateSelf(InertiaState, r0, a, stop_condition)
         final_masses_withStop.append(integrationResultsWithStop[-1].TotalMass)
-        final_m_withStop.append(integrationResultsWithStop[-1].M)
-        final_m2_withStop.append(integrationResultsWithStop[-1].M2)
+        final_m_withStop.append(integrationResultsWithStop[-1].SolarMass)
+        final_m2_withStop.append(integrationResultsWithStop[-1].SolarMass2)
         final_I_withStop.append(integrationResultsWithStop[-1].TotalI)
         final_I0_withStop.append(integrationResultsWithStop[-1].I0)
         final_I2_withStop.append(integrationResultsWithStop[-1].I2)
@@ -182,13 +182,19 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
     for i in range(len(integrationResultsWithStop)):
         finalScaledMasses.append([])
         finalScaledInertia.append([])
+        M2_scaled = final_m2_withStop[i]
+        I2_scaled = final_I2_withStop[i]
         for j in range(len(omega)):
-            if j == 0:
-                finalScaledMasses[i].append(getScaledTotalMass(final_m_withStop[i], final_m2_withStop[i], omega[j], omg))
-                finalScaledInertia[i].append(getScaledTotalInertia(final_I0_withStop[i], final_I2_withStop[i], omega[j], omg))
-            else:
-                finalScaledMasses[i].append(getScaledTotalMass(final_m_withStop[i], final_m2_withStop[i], omega[j], omega[j-1]))
-                finalScaledInertia[i].append(getScaledTotalInertia(final_I0_withStop[i], final_I2_withStop[i], omega[j], omega[j-1]))
+            if j != 0:
+                omega_j = omega[j]
+                omega_prev = omega[j-1]
+                M2_scaled = getScaledMass2(M2_scaled, omega_j, omega_prev)
+                I2_scaled = getScaledInertia2(I2_scaled, omega_j, omega_prev)
+            scaledMasses = getScaledTotalMass(final_m_withStop[i], M2_scaled)
+            finalScaledMasses[i].append(scaledMasses)
+            scaledInertia = getScaledTotalInertia(final_I0_withStop[i], I2_scaled)
+            finalScaledInertia[i].append(scaledInertia)
+
     plot3DMassInertiaVelocity(finalScaledMasses, finalScaledInertia, omega)
 
     #plotMassInertiaRelation(final_masses_withStop, final_I_withStop)

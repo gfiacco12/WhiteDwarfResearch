@@ -49,7 +49,7 @@ class InertiaState(State):
         self.I2: number = 0
 
     def getScaledTotalMass(self, omega_new, omega_old):
-        return getScaledTotalMass(self.M, self.M2, omega_new, omega_old)
+        return getScaledTotalMass(self.SolarMass, self.SolarMass2, omega_new, omega_old)
     
     def getScaledTotalInertia(self, omega_new, omega_old):
         return getScaledTotalInertia(self.I0, self.I2, omega_new, omega_old)

@@ -1,5 +1,5 @@
 from numpy import number
-from calculations import findDensity, integrateStar, integrateInertia, getFinalMassesVsFinalInertia
+from calculations import findDensity,  integrateStar, integrateInertia, getFinalMassesVsFinalInertia
 
 
 def main(r0: number, a: number):
@@ -13,6 +13,6 @@ def main(r0: number, a: number):
     K2 = integrateStar(rho, r0, a)
 
     integrateInertia(rho, r0, a, K2)
-    getFinalMassesVsFinalInertia(1e03, 0.5e07, 800, r0, a)
+    getFinalMassesVsFinalInertia(1e03, 0.5e07, 800, r0, a, K2)
     
 main(0.1, 5e9)
