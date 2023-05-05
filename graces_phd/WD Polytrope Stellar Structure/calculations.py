@@ -1,11 +1,12 @@
 from helper import getScaledMass2, getScaledInertia2, getScaledTotalMass, getScaledTotalInertia
-from graphing import plotCentralDensity, plotMassRadiusRelation, plotStellarStructure, plotMassInertiaRelation, plot3DMassRadiusVelocity,plot3DMassInertiaVelocity
+from graphing import plotCentralDensity, plotMassRadiusRelation, plotStellarStructure, plotMassInertiaRelation, plot3DMassRadiusVelocity,plot3DMassInertiaVelocity,plot2DMassInertiaVelocity
 from states.state import State
 from states.hydroState import HydroState
 from states.inertiaState import InertiaState
 from numpy import number
 import numpy as np
 from globals import *
+import matplotlib.pyplot as plt
 
 # Density finder function
 
@@ -65,23 +66,6 @@ def integrateStar(rho: number, r0: number, a: number):
     initialstate.setInitialState(r0)
     integrationResults: list[HydroState] = initialstate.integrateSelf(HydroState, r0, a)
     t = np.linspace(r0, a, len(integrationResults))
-
-    #impliment scaling for velocities
-    # r o tm
-    """     omega = np.linspace(omg, 0, 20)
-    totalMasses = []
-    for i in range(len(integrationResults)):
-        state = integrationResults[i]
-        r = t[i]
-        totalMasses.append([])
-        for j in range(len(omega)):
-            if j == 0:
-                totalMasses[i].append(state.getScaledTotalMass(omega[j], omg))
-            else:
-                totalMasses[i].append(state.getScaledTotalMass(omega[j], omega[j-1])) """
-            
-    #plot3DMassRadiusVelocity(t, totalMasses, omega)
-
     finalStep = integrationResults[-1]
 
     # note: mass is in g not M_sun here
@@ -176,12 +160,18 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
         final_I2_withStop.append(integrationResultsWithStop[-1].I2)
     
     #obtain scaling for angular velocity for M and I2
-    omega = np.linspace(omg, 0, 20) # Note: eventually convert this to frequencies not angular
+    #omega = np.linspace(omg, 0, 3) # Note: eventually convert this to frequencies not angular
+    omega = np.linspace(omg, 0, 11)
     finalScaledMasses = []
+    finalScaledM2 = []
     finalScaledInertia = []
-    for i in range(len(integrationResultsWithStop)):
+    finalScaledI2 = []
+
+    for i in range(len(final_masses_withStop)):
         finalScaledMasses.append([])
         finalScaledInertia.append([])
+        finalScaledM2.append([])
+        finalScaledI2.append([])
         M2_scaled = final_m2_withStop[i]
         I2_scaled = final_I2_withStop[i]
         for j in range(len(omega)):
@@ -190,11 +180,15 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
                 omega_prev = omega[j-1]
                 M2_scaled = getScaledMass2(M2_scaled, omega_j, omega_prev)
                 I2_scaled = getScaledInertia2(I2_scaled, omega_j, omega_prev)
+            finalScaledM2[i].append(M2_scaled)
             scaledMasses = getScaledTotalMass(final_m_withStop[i], M2_scaled)
             finalScaledMasses[i].append(scaledMasses)
+            finalScaledI2[i].append(I2_scaled)
             scaledInertia = getScaledTotalInertia(final_I0_withStop[i], I2_scaled)
             finalScaledInertia[i].append(scaledInertia)
+    print(np.shape(finalScaledM2))
+    print(np.shape(finalScaledInertia))
 
-    plot3DMassInertiaVelocity(finalScaledMasses, finalScaledInertia, omega)
+    plot2DMassInertiaVelocity(finalScaledMasses, finalScaledI2)
 
     #plotMassInertiaRelation(final_masses_withStop, final_I_withStop)

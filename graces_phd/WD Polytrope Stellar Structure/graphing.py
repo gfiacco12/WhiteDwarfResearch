@@ -141,3 +141,119 @@ def plot3DMassInertiaVelocity(totalMasses, totalInertia, omega):
     ax.set_zlabel('Inertia - z', labelpad=20)
     ax.set_title("Mass-Inertia-Spin Relation")
     plt.show()
+
+def plot2DMassInertiaVelocity(totalMasses, totalInertia):
+    #need to be 2D arrays. We want the ROWS of the inputs
+
+    for i in range(len(totalInertia)):
+        totalMasses[i:].sort()
+        totalInertia[i:].sort()
+
+    Mass0 = [mass[0] for mass in totalMasses]
+    Mass1 = [mass[1] for mass in totalMasses]
+    Mass2 = [mass[2] for mass in totalMasses]
+    Mass3 = [mass[3] for mass in totalMasses]
+    Mass4 = [mass[4] for mass in totalMasses]
+    Mass5 = [mass[5] for mass in totalMasses]
+    Mass6 = [mass[6] for mass in totalMasses]
+    Mass7 = [mass[7] for mass in totalMasses]
+    Mass8 = [mass[8] for mass in totalMasses]
+    Mass9 = [mass[9] for mass in totalMasses]
+    Mass10 = [mass[10] for mass in totalMasses]
+
+
+    inertia0 = [inertia[0] for inertia in totalInertia]
+    inertia1 = [inertia[1] for inertia in totalInertia]
+    inertia2 = [inertia[2] for inertia in totalInertia]
+    inertia3 = [inertia[3] for inertia in totalInertia]
+    inertia4 = [inertia[4] for inertia in totalInertia]
+    inertia5 = [inertia[5] for inertia in totalInertia]
+    inertia6 = [inertia[6] for inertia in totalInertia]
+    inertia7 = [inertia[7] for inertia in totalInertia]
+    inertia8 = [inertia[8] for inertia in totalInertia]
+    inertia9 = [inertia[9] for inertia in totalInertia]
+    inertia10 = [inertia[10] for inertia in totalInertia]
+
+    Mass_max = []
+    Mass_1 = []
+    Mass_2 = []
+    Mass_3 = []
+    Mass_4 = []
+    Mass_5 = []
+    Mass_6 = []
+    Mass_7 = []
+    Mass_8 = []
+    Mass_9 = []
+    Mass_10 = []
+    inertia_max = []
+    inertia_1 = []
+    inertia_2 = []
+    inertia_3 = []
+    inertia_4 = []
+    inertia_5 = []
+    inertia_6 = []
+    inertia_7 = []
+    inertia_8 = []
+    inertia_9 = []
+    inertia_10 = []
+
+    for i in range(len(Mass0)):
+        if Mass0[i]  >= 0.2:
+            Mass_max.append(Mass0[i])
+            inertia_max.append(inertia0[i])
+        if Mass1[i] >= 0.2:
+            Mass_1.append(Mass1[i])
+            inertia_1.append(inertia1[i])
+        if Mass2[i] >= 0.2:
+            Mass_2.append(Mass2[i])
+            inertia_2.append(inertia2[i])
+        if Mass3[i] >= 0.2:
+            Mass_3.append(Mass3[i])
+            inertia_3.append(inertia3[i])
+        if Mass4[i] >= 0.2:
+            Mass_4.append(Mass4[i])
+            inertia_4.append(inertia4[i])
+        if Mass5[i] >= 0.2:
+            Mass_5.append(Mass5[i])
+            inertia_5.append(inertia5[i])
+        if Mass6[i] >= 0.2:
+            Mass_6.append(Mass6[i])
+            inertia_6.append(inertia6[i])
+        if Mass7[i] >= 0.2:
+            Mass_7.append(Mass7[i])
+            inertia_7.append(inertia7[i])
+        if Mass8[i] >= 0.2:
+            Mass_8.append(Mass8[i])
+            inertia_8.append(inertia8[i])
+        if Mass9[i] >= 0.2:
+            Mass_9.append(Mass9[i])
+            inertia_9.append(inertia9[i])
+        if Mass10[i] >= 0.2:
+            Mass_10.append(Mass10[i])
+            inertia_10.append(inertia10[i])
+
+    
+
+    """ plt.loglog(Mass_max, inertia_max, label="$\Omega_{k}$")
+    plt.loglog(Mass_1, inertia_1, label = "$\Omega$ = 0.6$\Omega_{k}$")
+    plt.loglog(Mass_2, inertia_2, label = "$\Omega$ = 0.3$\Omega_{k}$")
+    plt.loglog(Mass_zero, inertia_zero, label = "$\Omega$ = 0") """
+    plt.figure()
+    plt.plot(Mass_max, inertia_max, label="$\Omega_{max}$")
+    plt.plot(Mass_1, inertia_1, label="$\Omega$ = 0.9$\Omega_{max}$")
+    plt.plot(Mass_2, inertia_2, label="$\Omega$ = 0.8$\Omega_{max}$")
+    plt.plot(Mass_3, inertia_3, label="$\Omega$ = 0.7$\Omega_{max}$")
+    plt.plot(Mass_4, inertia_4, label="$\Omega$ = 0.6$\Omega_{max}$")
+    plt.plot(Mass_5, inertia_5, label="$\Omega$ = 0.5$\Omega_{max}$")
+    plt.plot(Mass_6, inertia_6, label="$\Omega$ = 0.4$\Omega_{max}$")
+    plt.plot(Mass_7, inertia_7, label="$\Omega$ = 0.3$\Omega_{max}$")
+    plt.plot(Mass_8, inertia_8, label="$\Omega$ = 0.2$\Omega_{max}$")
+    plt.plot(Mass_9, inertia_9, label="$\Omega$ = 0.1$\Omega_{max}$")
+    plt.plot(Mass_9, inertia_9, label="$\Omega$ = 0")
+    plt.yscale("log")
+    plt.xlabel("Total Mass")
+    plt.ylabel("2nd Order Moment of Inertia")
+    plt.title("Mass vs Moment of Inertia for Range of Spin")
+    plt.legend()
+    plt.show()
+
