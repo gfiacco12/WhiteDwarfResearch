@@ -252,15 +252,15 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     print ("b =", popt[1], "+/-", pcov[1,1]**0.5)
     print("c =", popt[2], "+/-", pcov[2,2]**0.5)
     
-    xfine = np.linspace(min(omega), max(omega), 100)
+    xfine = np.linspace(min(omega), max(omega), len(Mass_max))
     xfine1 = np.linspace(min(Mass_max), max(Mass_max), len(Mass_max))
 
-    #create a total fit
-    total_popt, total_pcov = curve_fit(f1, omega, alpha) * curve_fit(f1, Mass_max, inertia_max)
-    print( "Parameters from Total fit:")
-    print( "a =", total_popt[0], "+/-", total_pcov[0,0]**0.5)
-    print ("b =", total_popt[1], "+/-", total_pcov[1,1]**0.5)
-    print("c =", total_popt[2], "+/-", total_pcov[2,2]**0.5)
+    #create a total fit - normalize the alpha fit to 1 at omega_max
+    alpha_poly = f1(xfine, popt[0], popt[1], popt[2])
+    IvsM_omega_max_fit = f1(xfine1, popt1[0], popt1[1], popt1[2])
+    normalized_to_Omega_max = (alpha_poly-np.min(alpha_poly))/(np.max(alpha_poly)-np.min(alpha_poly))
+    #print(normalized_to_Omega_max)
+    total_fit = normalized_to_Omega_max * IvsM_omega_max_fit
 
     #plotting I(2) vs M
     plt.figure()
@@ -289,5 +289,14 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     plt.ylabel("Scaling Factor - $\u03B1$*$\Omega_{max}^{2}$")
     plt.xlabel("Rotational Velocity, $\Omega$")
     plt.title("Scaling between Moment of Inertia and Spin")
+    plt.legend()
+    plt.show()
+
+    plt.figure()
+    plt.plot(xfine1, total_fit * 10**48, label="total fit")
+    plt.title("Total fit for Moment of Inertia and Mass")
+    plt.yscale("log")
+    plt.xlabel("Total Mass")
+    plt.ylabel("Moment of Inertia")
     plt.legend()
     plt.show()
