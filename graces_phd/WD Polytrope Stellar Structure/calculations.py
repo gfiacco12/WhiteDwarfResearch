@@ -102,10 +102,6 @@ def integrateStar(rho: number, r0: number, a: number):
     print("M0 = ",finalStep.M* 5e-34)
     print("M2 = ", finalStep.M2* 5e-34)
     
-    print("Test Velocity = ", omg)
-    print("Keplarian Velocity = ", omg_K)
-    print("Equatorial Radius = ", re)
-
     #plotStellarStructure(t, densities, totalMasses, totalPressures)
 
     return K2
@@ -186,8 +182,6 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
             finalScaledI2[i].append(I2_scaled)
             scaledInertia = getScaledTotalInertia(final_I0_withStop[i], I2_scaled)
             finalScaledInertia[i].append(scaledInertia)
-    print(np.shape(finalScaledM2))
-    print(np.shape(finalScaledInertia))
 
     plot2DMassInertiaVelocity(finalScaledMasses, finalScaledI2)
 

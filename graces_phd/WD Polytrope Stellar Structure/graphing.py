@@ -3,7 +3,8 @@ from matplotlib import pyplot as plt
 from numpy import number
 import numpy as np
 import matplotlib.ticker
-from mpl_toolkits.mplot3d import axes3d
+from scipy.optimize import curve_fit
+from globals import *
 
 # plotting central density vs final mass
 
@@ -161,7 +162,6 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     Mass9 = [mass[9] for mass in totalMasses]
     Mass10 = [mass[10] for mass in totalMasses]
 
-
     inertia0 = [inertia[0] for inertia in totalInertia]
     inertia1 = [inertia[1] for inertia in totalInertia]
     inertia2 = [inertia[2] for inertia in totalInertia]
@@ -198,9 +198,9 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     inertia_10 = []
 
     for i in range(len(Mass0)):
-        if Mass0[i]  >= 0.2:
+        if Mass0[i] >= 0.2:
             Mass_max.append(Mass0[i])
-            inertia_max.append(inertia0[i])
+            inertia_max.append(inertia0[i] / 10**48)
         if Mass1[i] >= 0.2:
             Mass_1.append(Mass1[i])
             inertia_1.append(inertia1[i])
@@ -230,17 +230,43 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
             inertia_9.append(inertia9[i])
         if Mass10[i] >= 0.2:
             Mass_10.append(Mass10[i])
-            inertia_10.append(inertia10[i])
+            inertia_10.append(inertia10[i]) #this one is 0, does not show up
 
+    #fitting the scaling factors for range of spins from above
+    alpha = [omg**2, 394*(omg**2), 700*(omg**2), 886*(omg**2), 1010*(omg**2), 1095*(omg**2),
+             1155*(omg**2), 1208*(omg**2), 1250*(omg**2), 1275*(omg**2)]
+    omega = np.linspace(0.1*omg, omg, 10)
     
+    #polynomial fitting function
+    def f1(x, a0, a1, a2):
+        return a0 + a1/x + a2/x**2
+    
+    popt, pcov = curve_fit(f1, omega, alpha)
+    popt1, pcov1 = curve_fit(f1, Mass_max, inertia_max)
+    print( "Parameters from I(2) vs M fit:")
+    print( "a =", popt1[0], "+/-", pcov1[0,0]**0.5)
+    print ("b =", popt1[1], "+/-", pcov1[1,1]**0.5)
+    print("c =", popt1[2], "+/-", pcov1[2,2]**0.5)
+    print( "Parameters from alpha fit:")
+    print( "a =", popt[0], "+/-", pcov[0,0]**0.5)
+    print ("b =", popt[1], "+/-", pcov[1,1]**0.5)
+    print("c =", popt[2], "+/-", pcov[2,2]**0.5)
+    
+    xfine = np.linspace(min(omega), max(omega), 100)
+    xfine1 = np.linspace(min(Mass_max), max(Mass_max), len(Mass_max))
 
-    """ plt.loglog(Mass_max, inertia_max, label="$\Omega_{k}$")
-    plt.loglog(Mass_1, inertia_1, label = "$\Omega$ = 0.6$\Omega_{k}$")
-    plt.loglog(Mass_2, inertia_2, label = "$\Omega$ = 0.3$\Omega_{k}$")
-    plt.loglog(Mass_zero, inertia_zero, label = "$\Omega$ = 0") """
+    #create a total fit
+    total_popt, total_pcov = curve_fit(f1, omega, alpha) * curve_fit(f1, Mass_max, inertia_max)
+    print( "Parameters from Total fit:")
+    print( "a =", total_popt[0], "+/-", total_pcov[0,0]**0.5)
+    print ("b =", total_popt[1], "+/-", total_pcov[1,1]**0.5)
+    print("c =", total_popt[2], "+/-", total_pcov[2,2]**0.5)
+
+    #plotting I(2) vs M
     plt.figure()
     plt.plot(Mass_max, inertia_max, label="$\Omega_{max}$")
-    plt.plot(Mass_1, inertia_1, label="$\Omega$ = 0.9$\Omega_{max}$")
+    plt.plot(xfine1, f1(xfine1, popt1[0], popt1[1], popt1[2]), 'r-', label="Polynomial Fit")
+    '''plt.plot(Mass_1, inertia_1, label="$\Omega$ = 0.9$\Omega_{max}$")
     plt.plot(Mass_2, inertia_2, label="$\Omega$ = 0.8$\Omega_{max}$")
     plt.plot(Mass_3, inertia_3, label="$\Omega$ = 0.7$\Omega_{max}$")
     plt.plot(Mass_4, inertia_4, label="$\Omega$ = 0.6$\Omega_{max}$")
@@ -249,11 +275,19 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     plt.plot(Mass_7, inertia_7, label="$\Omega$ = 0.3$\Omega_{max}$")
     plt.plot(Mass_8, inertia_8, label="$\Omega$ = 0.2$\Omega_{max}$")
     plt.plot(Mass_9, inertia_9, label="$\Omega$ = 0.1$\Omega_{max}$")
-    plt.plot(Mass_9, inertia_9, label="$\Omega$ = 0")
+    plt.plot(Mass_10, inertia_10, label="$\Omega$ = 0")'''
     plt.yscale("log")
     plt.xlabel("Total Mass")
-    plt.ylabel("2nd Order Moment of Inertia")
+    plt.ylabel("2nd Order Moment of Inertia ($x10^{48}$)")
     plt.title("Mass vs Moment of Inertia for Range of Spin")
     plt.legend()
     plt.show()
 
+    plt.figure()
+    plt.scatter(omega, alpha, label="data")
+    plt.plot(xfine, f1(xfine, popt[0], popt[1], popt[2]), 'r-', label="Polynomial Fit")
+    plt.ylabel("Scaling Factor - $\u03B1$*$\Omega_{max}^{2}$")
+    plt.xlabel("Rotational Velocity, $\Omega$")
+    plt.title("Scaling between Moment of Inertia and Spin")
+    plt.legend()
+    plt.show()

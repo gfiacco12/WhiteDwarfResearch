@@ -1,7 +1,6 @@
 from numpy import number
 from calculations import findDensity,  integrateStar, integrateInertia, getFinalMassesVsFinalInertia
 
-
 def main(r0: number, a: number):
     # Function to calculate central density for Polytropic White Dwarf to achieve specific final massa2
     # INPUTS: Desired final mass (in Solar Mass Units), range of central density values (start, stop, number of steps)
