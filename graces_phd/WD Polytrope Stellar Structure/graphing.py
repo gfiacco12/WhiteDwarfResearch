@@ -149,7 +149,7 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     for i in range(len(totalInertia)):
         totalMasses[i:].sort()
         totalInertia[i:].sort()
-
+    
     Mass0 = [mass[0] for mass in totalMasses]
     Mass1 = [mass[1] for mass in totalMasses]
     Mass2 = [mass[2] for mass in totalMasses]
@@ -200,72 +200,94 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     for i in range(len(Mass0)):
         if Mass0[i] >= 0.2:
             Mass_max.append(Mass0[i])
-            inertia_max.append(inertia0[i] / 10**48)
+            inertia_max.append(inertia0[i]/10**48)
         if Mass1[i] >= 0.2:
             Mass_1.append(Mass1[i])
-            inertia_1.append(inertia1[i])
+            inertia_1.append(inertia1[i]/10**48)
         if Mass2[i] >= 0.2:
             Mass_2.append(Mass2[i])
-            inertia_2.append(inertia2[i])
+            inertia_2.append(inertia2[i]/10**48)
         if Mass3[i] >= 0.2:
             Mass_3.append(Mass3[i])
-            inertia_3.append(inertia3[i])
+            inertia_3.append(inertia3[i]/10**48)
         if Mass4[i] >= 0.2:
             Mass_4.append(Mass4[i])
-            inertia_4.append(inertia4[i])
+            inertia_4.append(inertia4[i]/10**48)
         if Mass5[i] >= 0.2:
             Mass_5.append(Mass5[i])
-            inertia_5.append(inertia5[i])
+            inertia_5.append(inertia5[i]/10**48)
         if Mass6[i] >= 0.2:
             Mass_6.append(Mass6[i])
-            inertia_6.append(inertia6[i])
+            inertia_6.append(inertia6[i]/10**48)
         if Mass7[i] >= 0.2:
             Mass_7.append(Mass7[i])
-            inertia_7.append(inertia7[i])
+            inertia_7.append(inertia7[i]/10**48)
         if Mass8[i] >= 0.2:
             Mass_8.append(Mass8[i])
-            inertia_8.append(inertia8[i])
+            inertia_8.append(inertia8[i]/10**48)
         if Mass9[i] >= 0.2:
             Mass_9.append(Mass9[i])
-            inertia_9.append(inertia9[i])
+            inertia_9.append(inertia9[i]/10**48)
         if Mass10[i] >= 0.2:
             Mass_10.append(Mass10[i])
             inertia_10.append(inertia10[i]) #this one is 0, does not show up
 
     #fitting the scaling factors for range of spins from above
-    alpha = [omg**2, 394*(omg**2), 700*(omg**2), 886*(omg**2), 1010*(omg**2), 1095*(omg**2),
-             1155*(omg**2), 1208*(omg**2), 1250*(omg**2), 1275*(omg**2)]
+    alpha_alt = [1, (19.85*omg)**2, (13.2*omg)**2, (9.9*omg)**2, (7.9*omg)**2, (6.6*omg)**2, 
+                  (5.65*omg)**2, (4.95*omg)**2, (4.4*omg)**2, (3.95*omg)**2]
     omega = np.linspace(0.1*omg, omg, 10)
     
     #polynomial fitting function
     def f1(x, a0, a1, a2):
         return a0 + a1/x + a2/x**2
     
-    popt, pcov = curve_fit(f1, omega, alpha)
-    popt1, pcov1 = curve_fit(f1, Mass_max, inertia_max)
+    def f2(X, b1, c1, d1, b2, c2, d2):
+        x,y = X
+        return (b1/np.log(x) + c1/np.log(2*x) + d1/np.log(3*x)) + (b2/y + c2/np.power(y,2) + d2/np.power(y,3))
+
+    #fit the product of the polys
+    omega_range = np.linspace(min(omega), max(omega), len(Mass_9))
+    mass_range = np.linspace(min(Mass_9), max(Mass_9), len(Mass_9))
+    mega_mass_list = np.concatenate([Mass_9, Mass_8, Mass_7, Mass_6, Mass_5, Mass_4, Mass_3, Mass_2, Mass_1, Mass_max])
+    mega_omega_list = np.concatenate([omega[0]*np.ones(len(Mass_9)), omega[1]*np.ones(len(Mass_8)), omega[2]*np.ones(len(Mass_7)), omega[3]*np.ones(len(Mass_6)),
+                                      omega[4]*np.ones(len(Mass_5)), omega[5]*np.ones(len(Mass_4)), omega[6]*np.ones(len(Mass_3)),
+                                      omega[7]*np.ones(len(Mass_2)), omega[8]*np.ones(len(Mass_1)), omega[9]*np.ones(len(Mass_max))])
+    mega_inertia_list = np.concatenate([inertia_9, inertia_8, inertia_7, inertia_6, inertia_5, inertia_4, inertia_3, inertia_2, inertia_1, inertia_max])
+    popt_tot, pcov_tot = curve_fit(f2, (mega_omega_list, mega_mass_list), mega_inertia_list)
+
+    popt1, pcov1 = curve_fit(f1, mega_mass_list, mega_inertia_list)
+    popt2, pcov2 = curve_fit(f1, omega, alpha_alt)
     print( "Parameters from I(2) vs M fit:")
     print( "a =", popt1[0], "+/-", pcov1[0,0]**0.5)
     print ("b =", popt1[1], "+/-", pcov1[1,1]**0.5)
     print("c =", popt1[2], "+/-", pcov1[2,2]**0.5)
-    print( "Parameters from alpha fit:")
-    print( "a =", popt[0], "+/-", pcov[0,0]**0.5)
-    print ("b =", popt[1], "+/-", pcov[1,1]**0.5)
-    print("c =", popt[2], "+/-", pcov[2,2]**0.5)
-    
-    xfine = np.linspace(min(omega), max(omega), len(Mass_max))
-    xfine1 = np.linspace(min(Mass_max), max(Mass_max), len(Mass_max))
+    print( "Parameters from alpha_alt fit:")
+    print( "a =", popt2[0], "+/-", pcov2[0,0]**0.5)
+    print ("b =", popt2[1], "+/-", pcov2[1,1]**0.5)
+    print("c =", popt2[2], "+/-", pcov2[2,2]**0.5)
+
+    print( "Parameters from total fit:")
+    print( "b1 =", popt_tot[0], "+/-", pcov_tot[0,0]**0.5)
+    print ("c1 =", popt_tot[1], "+/-", pcov_tot[1,1]**0.5)
+    print("d1 =", popt_tot[2], "+/-", pcov_tot[2,2]**0.5)   
+    print( "b2 =", popt_tot[3], "+/-", pcov_tot[3,3]**0.5)
+    print ("c2 =", popt_tot[4], "+/-", pcov_tot[4,4]**0.5)
+    print("d2 =", popt_tot[5], "+/-", pcov_tot[5,5]**0.5)  
+    #print("d2 =", popt_tot[6], "+/-", pcov_tot[6,6]**0.5)
+    #print("d2 =", popt_tot[7], "+/-", pcov_tot[7,7]**0.5)
 
     #create a total fit - normalize the alpha fit to 1 at omega_max
-    alpha_poly = f1(xfine, popt[0], popt[1], popt[2])
-    IvsM_omega_max_fit = f1(xfine1, popt1[0], popt1[1], popt1[2])
-    normalized_to_Omega_max = (alpha_poly-np.min(alpha_poly))/(np.max(alpha_poly)-np.min(alpha_poly))
-    #print(normalized_to_Omega_max)
-    total_fit = normalized_to_Omega_max * IvsM_omega_max_fit
+    alpha_alt_poly = f1(omega_range, popt2[0], popt2[1], popt2[2])
+    IvsM_omega_fit = f1(mass_range, popt1[0], popt1[1], popt1[2])
+    normalized_to_Omega_reference = (alpha_alt_poly-np.min(alpha_alt_poly))/(np.max(alpha_alt_poly)-np.min(alpha_alt_poly))
+    alt_total_fit =  (alpha_alt_poly) / ((1.5 * IvsM_omega_fit))
+    total_fit = f2((omega_range, mass_range), popt_tot[0], popt_tot[1], popt_tot[2], popt_tot[3], 
+                   popt_tot[4], popt_tot[5])
 
     #plotting I(2) vs M
     plt.figure()
-    plt.plot(Mass_max, inertia_max, label="$\Omega_{max}$")
-    plt.plot(xfine1, f1(xfine1, popt1[0], popt1[1], popt1[2]), 'r-', label="Polynomial Fit")
+    #plt.plot(Mass_max, inertia_max, label="$\Omega_{max}$")
+    plt.plot(Mass_9, alt_total_fit, 'r-', label="Polynomial Fit")
     '''plt.plot(Mass_1, inertia_1, label="$\Omega$ = 0.9$\Omega_{max}$")
     plt.plot(Mass_2, inertia_2, label="$\Omega$ = 0.8$\Omega_{max}$")
     plt.plot(Mass_3, inertia_3, label="$\Omega$ = 0.7$\Omega_{max}$")
@@ -273,9 +295,9 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     plt.plot(Mass_5, inertia_5, label="$\Omega$ = 0.5$\Omega_{max}$")
     plt.plot(Mass_6, inertia_6, label="$\Omega$ = 0.4$\Omega_{max}$")
     plt.plot(Mass_7, inertia_7, label="$\Omega$ = 0.3$\Omega_{max}$")
-    plt.plot(Mass_8, inertia_8, label="$\Omega$ = 0.2$\Omega_{max}$")
+    plt.plot(Mass_8, inertia_8, label="$\Omega$ = 0.2$\Omega_{max}$")'''
     plt.plot(Mass_9, inertia_9, label="$\Omega$ = 0.1$\Omega_{max}$")
-    plt.plot(Mass_10, inertia_10, label="$\Omega$ = 0")'''
+    #plt.plot(Mass_10, inertia_10, label="$\Omega$ = 0")
     plt.yscale("log")
     plt.xlabel("Total Mass")
     plt.ylabel("2nd Order Moment of Inertia ($x10^{48}$)")
@@ -284,8 +306,8 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     plt.show()
 
     plt.figure()
-    plt.scatter(omega, alpha, label="data")
-    plt.plot(xfine, f1(xfine, popt[0], popt[1], popt[2]), 'r-', label="Polynomial Fit")
+    plt.scatter(omega, alpha_alt, label="data")
+    plt.plot(omega_range, f1(omega_range, popt2[0], popt2[1], popt2[2]), 'r-', label="Polynomial Fit")
     plt.ylabel("Scaling Factor - $\u03B1$*$\Omega_{max}^{2}$")
     plt.xlabel("Rotational Velocity, $\Omega$")
     plt.title("Scaling between Moment of Inertia and Spin")
@@ -293,10 +315,10 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     plt.show()
 
     plt.figure()
-    plt.plot(xfine1, total_fit * 10**48, label="total fit")
-    plt.title("Total fit for Moment of Inertia and Mass")
+    plt.plot(Mass_9, alt_total_fit, label="total fit, $\Omega$ = 0.1$\Omega_{max}$")
+    plt.title("Total Fit for Moment of Inertia and Mass as Function of Spin")
     plt.yscale("log")
     plt.xlabel("Total Mass")
-    plt.ylabel("Moment of Inertia")
+    plt.ylabel("Moment of Inertia, $I^{(2)}$")
     plt.legend()
     plt.show()
