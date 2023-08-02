@@ -67,3 +67,32 @@ def Frequency_Tides(freq0, mass1, mass2, t_obs):
     print("Frequency bin:", df_1, "Hz")
     print("-----------------------------------------------")
     return fdot, fddot, delta_fddot 
+
+
+def fisherMatrix(t_obs):
+    #define f(t), phi(t)
+    #declare variables for fisher
+    t = np.linspace[0, t_obs, 1000]
+
+    #create a function to calculate h(t). Use LISA code to grab values for the params. Copy fisher matrix
+    #code from my github to do the actual derivative and looping through the values and elements of matrix
+    # maybe look into scipy function to take derivatives instead of coding it myself
+
+    phi = lambda phi0, f0, fD, fDD : phi0 + 2*np.pi*f0*t + np.pi*fD*t**2 + (np.pi/3)*fDD*t**3
+    h = lambda A, phi0, f0, fD, fDD : A * np.cos(2 * np.pi * phi(phi0, f0, fD, fDD))
+
+    #take derivatives for elements of fisher matrix
+    return
+
+def fisherMatrixElement(noise = 1):
+    const = 2 / noise
+    
+    return
+
+def h(t):
+    return
+
+def add(x, y):
+    return x, y
+
+add = lambda x, y : x + y
