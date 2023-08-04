@@ -88,9 +88,9 @@ def GWsignal(t_obs, params):
     gamma = fDD * t_obs**3
     t = np.linspace(0, t_obs, 1000)
 
-    print("alpha:", alpha) #~ 1.2e6
+    """ print("alpha:", alpha) #~ 1.2e6
     print("beta:", beta) # ~210
-    print('gamma:', gamma) # ~ 0.1
+    print('gamma:', gamma) # ~ 0.1 """
     phi = phi0 + 2*np.pi*alpha*(t/t_obs) + np.pi*beta*(t/t_obs)**2 + (np.pi/3)*gamma*(t/t_obs)**3
     h = A * np.cos(2 * np.pi * phi)
     return h
@@ -101,29 +101,28 @@ def calculateAmplitude(SNR, t_obs):
     return(np.sqrt(2)*SNR / np.sqrt(t_obs))
 
 
-def fisherMatrix(t_obs, A, phi0, f0, fD, fDD):
+def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     #define parameters
     params = np.array([A, phi0, f0, fD, fDD])
-    #time series
-    print(A)
-    signal = GWsignal(t_obs, params)
-    #initialize matrix and step size vectors
-    vector1 = np.zeros(np.size(params))
-    vector2 = np.zeros(np.size(params))
-    fisher = np.zeros((np.size(params),np.size(params)))
+    h = np.array([1.e-6, 0.001, 1.e3, 0.1, 0.001])
     
-    #step sizes
-    amp_step = 1.e-6
-    phi_step = 0.001
-    f0_step = 1.e3
-    fD_step = 0.1
-    fDD_step = 0.001
+    #initialize matrix and step size vectors
+    fisher = np.zeros((np.size(params), np.size(params)))
 
+    fx = lambda x : (GWsignal(t_obs, getParamsWithStep(params, x, h[x], True))[-1] - GWsignal(t_obs, getParamsWithStep(params, x, h[x], False)))[-1] / (2*h[x])
 
+    for i in range(len(params)):
+        for j in range(len(params)):
+            fisher[i][j] = fx(i) * fx(j)
 
+    return fisher
 
-    #create a function to calculate h(t). Use LISA code to grab values for the params. Copy fisher matrix
-    #code from my github to do the actual derivative and looping through the values and elements of matrix
-    # maybe look into scipy function to take derivatives instead of coding it myself
-    #take derivatives for elements of fisher matrix
-    return
+def getParamsWithStep(params, target, step, stepUp = True):
+    newParams = np.copy(params)
+
+    if (stepUp):
+        newParams[target] = params[target] + step
+    else:
+        newParams[target] = params[target] - step
+
+    return newParams
