@@ -139,3 +139,51 @@ def getParamsWithStep(params, target, step, stepUp = True):
         newParams[target] = params[target] - step
 
     return newParams
+
+#From Hangs code
+def inner_product(h1, h2, freq, psd):  
+    """
+    inner product
+    """
+    integrand = (np.conj(h1)*h2+h1*np.conj(h2))/psd
+    rho_sq = 2.*integrate.trapz(integrand, freq)
+    return rho_sq
+
+def fisher(t_obs, A, phi0, f0, fD, fDD, psd):
+    """
+    numerically compute the fisher matrix
+    """
+    t = np.linspace(0, t_obs, 1000)
+    params = np.array([A, phi0, f0, fD, fDD])
+    nPt=len(t)
+    nDof=len(params)
+    dpar= np.array([[1.e-6, 0.001, 1.e3, 0.1, 0.001],
+                    [-1.e-6, -0.001, -1.e3, -0.1, -0.001]])
+    dh=np.zeros([nDof, nPt], dtype=np.complex128)
+    for i in range(nDof):
+        par_u = params.copy()
+        par_u[i] += dpar[0, i]
+        hh_u = GWsignal(t, t_obs, par_u)
+        
+        par_l = params.copy()
+        par_l[i] += dpar[1, i]
+        hh_l = GWsignal(t, t_obs, par_l)
+        
+        dh[i, :] = (hh_u - hh_l) / (dpar[0, i] - dpar[1, i])
+        
+    gamma=np.zeros([nDof,nDof])
+    for i in range(nDof):
+        for j in range(i, nDof, 1):
+            gamma[i, j]=np.real(inner_product(dh[i, :], dh[j, :], t, psd))
+    
+    for i in range(nDof):
+        for j in range(i):
+            gamma[i, j]=gamma[j, i]
+    
+    print("---------")
+    sigma = linalg.inv(gamma)
+    label = [r'$A$', r'$\phi_{0}$',  r'$f_{0}$', r'$\dot{f}_{0}$', r'$\ddot{f}_{0}$']
+    for i in range(len(params)):
+        print('Error in %s: %e'%(label[i], np.sqrt(sigma[i, i])))
+            
+    return gamma
