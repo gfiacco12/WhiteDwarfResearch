@@ -1,6 +1,9 @@
 from numpy import number
 import numpy as np
 from const import *
+import scipy as sc
+from scipy import integrate, linalg
+import matplotlib.pyplot as plt
 
 def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
 
@@ -45,14 +48,14 @@ def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
     #0PN point particle freqD
     fdot_pp = 96/5*np.pi**(8/3)*freq0**(11/3)*chirpMass**(5/3)
     
-    I_wd = 8.51e-10 * ((mass1/0.6*MSOLAR)**(1/3) + (mass2/0.6*MSOLAR)**(1/3))
+    I_wd = 8.51e-10 * ((mass1/(0.6*MSOLAR))**(1/3) + (mass2/(0.6*MSOLAR))**(1/3))
     I_orb = chirpMass**(5/3) / ((np.pi*freq0)**(4/3))
     #1PN freqD and freqDD
     fdot = fdot_pp * (1 + ((3*I_wd/I_orb)/(1 - (3*I_wd/I_orb))) )
     fddot = (11/3)*(fdot_pp * fdot/freq0 )* ((1 - (21/11)*(I_wd/I_orb)) / ((1 - (3*I_wd/I_orb))**2))
     fddot_0PN = (11/3)*(fdot ** 2) / freq0
     delta_fddot = fddot - fddot_0PN 
-    fd_corr = (3*I_wd/I_orb)/(1 - (3*I_wd/I_orb))
+    fd_corr = (3*I_wd/I_orb)/(1 - (3*I_wd/I_orb)) 
 
     amp = np.pi**2/3 * chirpMass**(5/3) * freq0**(2/3) / dl
 
@@ -75,7 +78,7 @@ def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
     return fdot, fddot
 
 
-def GWsignal(t_obs, params):
+def GWsignal(t, t_obs, params):
     #generates simple sinusoidal signal
     A = params[0]
     phi0 = params[1]
@@ -86,7 +89,6 @@ def GWsignal(t_obs, params):
     alpha = f0 * t_obs
     beta = fD * t_obs**2
     gamma = fDD * t_obs**3
-    t = np.linspace(0, t_obs, 1000)
 
     """ print("alpha:", alpha) #~ 1.2e6
     print("beta:", beta) # ~210
@@ -105,17 +107,28 @@ def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     #define parameters
     params = np.array([A, phi0, f0, fD, fDD])
     h = np.array([1.e-6, 0.001, 1.e3, 0.1, 0.001])
-    
+    label = [r'$A$', r'$\phi_{0}$',  r'$f_{0}$', r'$\dot{f}_{0}$', r'$\ddot{f}_{0}$']
+
+
     #initialize matrix and step size vectors
     fisher = np.zeros((np.size(params), np.size(params)))
 
-    fx = lambda x : (GWsignal(t_obs, getParamsWithStep(params, x, h[x], True))[-1] - GWsignal(t_obs, getParamsWithStep(params, x, h[x], False)))[-1] / (2*h[x])
+    fx = lambda x, t : (GWsignal(t, t_obs, getParamsWithStep(params, x, h[x], True)) - GWsignal(t, t_obs, getParamsWithStep(params, x, h[x], False))) / (2*h[x])
 
     for i in range(len(params)):
         for j in range(len(params)):
-            fisher[i][j] = fx(i) * fx(j)
+            integrationFunction = lambda t : fx(i, t) * fx(j, t)
+            value = integrate.quad(integrationFunction, 0, t_obs)
+            fisher[i][j] = value[0]
 
+    #print(fisher)
+    print("---------")
+    sigma = linalg.inv(fisher)
+
+    for i in range(len(params)):
+        print('Error in %s: %e'%(label[i], np.sqrt(sigma[i, i])))
     return fisher
+
 
 def getParamsWithStep(params, target, step, stepUp = True):
     newParams = np.copy(params)
