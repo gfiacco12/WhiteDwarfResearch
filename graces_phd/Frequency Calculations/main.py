@@ -1,5 +1,5 @@
 import numpy as np
-from FrequencyCalculations import Frequency_1PN, Frequency_Tides, Newton_Raphson
+from FrequencyCalculations import Frequency_1PN, Frequency_Tides, setupNewtonRaphson
 from FisherCalculations import getFisherMatrix, calculateAmplitude, fisher
 from const import *
 
@@ -11,11 +11,8 @@ def main(freq0, mass1, mass2, dl, t_obs):
     fD_tide, fDD_tide = Frequency_Tides(freq0, mass1, mass2, dl, t_obs)
     
     
-    Newton_Raphson(freq0, 0.6*MSOLAR, 0.6*MSOLAR, mass1, mass2, dl, t_obs, 0.0001)
-    
-    
-    
-    
+    setupNewtonRaphson(freq0, 0.6*MSOLAR, 0.6*MSOLAR)
+
     
     #getFisherMatrix(t_obs, calculateAmplitude(10, t_obs), 1.5, freq0, fD_1PN, fDD_1PN)
     #fisher(t_obs, calculateAmplitude(10, t_obs), 1.5, freq0, fD_1PN, fDD_1PN, 1)

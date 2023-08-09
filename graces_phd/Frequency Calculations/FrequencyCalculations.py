@@ -11,18 +11,13 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
 
     chirpMass = getChirpMass(mass1, mass2)
     totalMass = getTotalMass(mass1, mass2)
-
     eta = (chirpMass/totalMass)**(5/3)
     #0PN point particle freqD
     fdot_pp = 96/5*np.pi**(8/3)*freq0**(11/3)*chirpMass**(5/3)
     fd_corr = ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3)
     #1PN freqD and freqDD
     ### Fix this ####
-    get_fdot = lambda tm:  fdot_pp * (1 + ((743/1344)-(11*eta/16))*(8*np.pi*tm*freq0)**(2/3))
-    fdot = get_fdot(totalMass)
-    d_fdot = derivative(get_fdot, totalMass, 0.001)
-    print(d_fdot)
-
+    fdot = fdot_pp * (1 + ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
     fddot = fdot_pp * (fdot/freq0) * ((11/3) + (13/3)*((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
     fddot_0PN = (11/3)*(fdot ** 2) / freq0
     delta_fddot = fddot - fddot_0PN 
@@ -91,29 +86,37 @@ def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
     return fdot, fddot
 
 
-def Newton_Raphson(freq0, mass1_theory, mass2_theory, mass1, mass2, dl, t_obs, eps):
+def getFrequency_ChirpTotalMass(freq0, params):
+    chirpMass, totalMass = params
+    eta = ( chirpMass / totalMass )**(5/3)
+
+    fdot_pp = 96/5*np.pi**(8/3)*freq0**(11/3)*chirpMass**(5/3)
+    fdot = fdot_pp * (1 + ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
+    fddot = fdot_pp * (fdot/freq0) * ((11/3) + (13/3)*
+                                      ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
+    return fdot, fddot
+
+
+def setupNewtonRaphson(freq0, mass1, mass2):
     #root finding method for Mt and Mc from the 1PN GW equations
     #need initial freq, fD, fDD data, and your symmetric mass ratio guess (for now assume equal mass: eta = 1/4)
     #Need to define initial guesses first
-
-    F = np.array([Frequency_1PN(freq0, mass1_theory, mass2_theory, dl, t_obs)[0], 
-                  Frequency_1PN(freq0, mass1_theory, mass2_theory, dl, t_obs)[1]])
     
-    #Jacobian - issue, freq functions take m1 m2 as inputs, I need a list of params as inputs to take derivatives
-    #similar to fisher matrix calculation
-    #create new funcs to calculate fd, fdd with correct parameterization?
-    #Real param values
-    chirpMass = getChirpMass(mass1, mass2)
-    totalMass = getTotalMass(mass1, mass2)
-
-    params = [chirpMass, totalMass]
+    chirpMass_guess = getChirpMass(mass1, mass2)
+    totalMass_guess = getTotalMass(mass1, mass2)
+    params_guess = [chirpMass_guess, totalMass_guess]
+    step_size = [0.01, 0.01]
     
-    #starting guess param values
-    eta = (mass1_theory * mass2_theory) / (mass1_theory + mass2_theory)**2
-    chirpMass_guess = ((5 / (96 * np.pi**(8/3))) * (Frequency_1PN(freq0, mass1_theory, mass2_theory, dl, t_obs)[0] / freq0**(11/3)))**(3/5)
-    totalMass_guess = chirpMass_guess / eta**(3/5)
+    F = np.array([getFrequency_ChirpTotalMass(freq0, params_guess)[0], 
+                  getFrequency_ChirpTotalMass(freq0, params_guess)[1]])
+    
+    dF = lambda x : derivative(F[x], params_guess, step_size, x)
+    
+    jacobian = np.zeros((np.size(params_guess), np.size(params_guess)))
 
+    for i in range(len(params_guess)):
+        for j in range(len(params_guess)):
+            jacobian[i][j] = dF(j)
     F_norm = np.linalg.norm(F, ord=2)
-
-
+    print(F_norm)
     return
