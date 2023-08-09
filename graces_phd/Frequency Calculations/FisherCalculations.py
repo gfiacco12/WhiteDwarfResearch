@@ -4,6 +4,7 @@ from const import *
 import scipy as sc
 from scipy import integrate, linalg
 import matplotlib.pyplot as plt
+from HelperCalculations import getParamsWithStep
 
 def GWsignal(t, t_obs, params):
     #generates simple sinusoidal signal
@@ -55,17 +56,6 @@ def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     for i in range(len(params)):
         print('Error in %s: %e'%(label[i], np.sqrt(sigma[i, i])))
     return fisher
-
-
-def getParamsWithStep(params, target, step, stepUp = True):
-    newParams = np.copy(params)
-
-    if (stepUp):
-        newParams[target] = params[target] + step
-    else:
-        newParams[target] = params[target] - step
-
-    return newParams
 
 #From Hangs code
 def inner_product(h1, h2, freq, psd):  

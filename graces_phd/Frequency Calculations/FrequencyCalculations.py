@@ -11,12 +11,18 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
 
     chirpMass = getChirpMass(mass1, mass2)
     totalMass = getTotalMass(mass1, mass2)
+
     eta = (chirpMass/totalMass)**(5/3)
     #0PN point particle freqD
     fdot_pp = 96/5*np.pi**(8/3)*freq0**(11/3)*chirpMass**(5/3)
     fd_corr = ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3)
     #1PN freqD and freqDD
-    fdot = fdot_pp * (1 + ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
+    ### Fix this ####
+    get_fdot = lambda tm:  fdot_pp * (1 + ((743/1344)-(11*eta/16))*(8*np.pi*tm*freq0)**(2/3))
+    fdot = get_fdot(totalMass)
+    d_fdot = derivative(get_fdot, totalMass, 0.001)
+    print(d_fdot)
+
     fddot = fdot_pp * (fdot/freq0) * ((11/3) + (13/3)*((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
     fddot_0PN = (11/3)*(fdot ** 2) / freq0
     delta_fddot = fddot - fddot_0PN 
@@ -27,7 +33,6 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
     df = (1/t_obs)
     dfd = (1/t_obs**2)
     dfdd = (1/ t_obs**3)
-
 
     print("1PN CORRECTION TERMS")
     print("-----------------------------------------------")
@@ -96,7 +101,7 @@ def Newton_Raphson(freq0, mass1_theory, mass2_theory, mass1, mass2, dl, t_obs, e
     
     #Jacobian - issue, freq functions take m1 m2 as inputs, I need a list of params as inputs to take derivatives
     #similar to fisher matrix calculation
-
+    #create new funcs to calculate fd, fdd with correct parameterization?
     #Real param values
     chirpMass = getChirpMass(mass1, mass2)
     totalMass = getTotalMass(mass1, mass2)
