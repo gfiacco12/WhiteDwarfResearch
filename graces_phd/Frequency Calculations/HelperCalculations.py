@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import collections.abc
 
 def getChirpMass(mass1, mass2):
-    return((mass1*mass2)**(3/5) / (mass1 + mass2)**(1/5))
+    return(((mass1*mass2)**(3/5)) / ((mass1 + mass2)**(1/5)))
 
 def getTotalMass(mass1, mass2):
     return(mass1 + mass2)

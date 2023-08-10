@@ -29,7 +29,7 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
     dfd = (1/t_obs**2)
     dfdd = (1/ t_obs**3)
 
-    print("1PN CORRECTION TERMS")
+    """ print("1PN CORRECTION TERMS")
     print("-----------------------------------------------")
     print("eta:", eta)
     print("0PN point particle fdot:", fdot_pp, "Hz")
@@ -43,7 +43,7 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
     print("Frequency bin:", df)
     print("Change in Freq bin due to fdot:", dfd)
     print("Change in Freq bin due to fddot:", dfdd)
-    print("-----------------------------------------------")
+    print("-----------------------------------------------") """
     return fdot, fddot
 
 
@@ -69,7 +69,7 @@ def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
     dfd = (1/t_obs**2)
     dfdd = (1/ t_obs**3)
 
-    print("TIDAL CORRECTION TERMS")
+    """     print("TIDAL CORRECTION TERMS")
     print("-----------------------------------------------")
     print("eta:", eta)
     print("0PN point particle fdot:", fdot_pp, "Hz")
@@ -82,7 +82,7 @@ def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
     print("Frequency bin:", df)
     print("Change in Freq bin due to fdot:", dfd)
     print("Change in Freq bin due to fddot:", dfdd)
-    print("-----------------------------------------------")
+    print("-----------------------------------------------") """
     return fdot, fddot
 
 
@@ -94,6 +94,12 @@ def getFrequency_ChirpTotalMass(freq0, params):
     fdot = fdot_pp * (1 + ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
     fddot = fdot_pp * (fdot/freq0) * ((11/3) + (13/3)*
                                       ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
+    print("Mc:",chirpMass)
+    print("Mt:",totalMass)
+    print(eta)
+    print(fdot_pp)
+    print(fdot)
+    print(fddot)
     return fdot, fddot
 
 
@@ -105,18 +111,15 @@ def setupNewtonRaphson(freq0, mass1, mass2):
     chirpMass_guess = getChirpMass(mass1, mass2)
     totalMass_guess = getTotalMass(mass1, mass2)
     params_guess = [chirpMass_guess, totalMass_guess]
-    step_size = [0.01, 0.01]
-    
-    F = np.array([getFrequency_ChirpTotalMass(freq0, params_guess)[0], 
-                  getFrequency_ChirpTotalMass(freq0, params_guess)[1]])
-    
-    dF = lambda x : derivative(F[x], params_guess, step_size, x)
-    
+    step_size = [1.e-8, 1.e-8]
     jacobian = np.zeros((np.size(params_guess), np.size(params_guess)))
-
+    
     for i in range(len(params_guess)):
         for j in range(len(params_guess)):
+            fx = lambda params: getFrequency_ChirpTotalMass(freq0, params)[i]
+            dF = lambda x: derivative(fx, params_guess, step_size, x)
             jacobian[i][j] = dF(j)
-    F_norm = np.linalg.norm(F, ord=2)
-    print(F_norm)
+    print(jacobian)
+    print("Mc guess:", chirpMass_guess)
+    print("Mt guess:", totalMass_guess)
     return
