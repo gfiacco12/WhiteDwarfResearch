@@ -45,8 +45,8 @@ def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
             di = lambda t : derivative(get_fx(t), params, h, i)
             dj = lambda t : derivative(get_fx(t), params, h, j)
             integrationFunction = lambda t : di(t) * dj(t)
-            value = 2 * integrate.quad(integrationFunction, 0, t_obs)
-            fisher[i, j] = value[0]
+            value = integrate.quad(integrationFunction, 0, t_obs, limit=200)
+            fisher[i, j] = value[0] * 2
 
     sigma = linalg.inv(fisher)
 
@@ -93,6 +93,7 @@ def fisher(t_obs, A, phi0, f0, fD, fDD, psd):
     for i in range(nDof):
         for j in range(i):
             gamma[i, j]=gamma[j, i]
+
     print(gamma)
     print("---------")
     sigma = linalg.inv(gamma)
