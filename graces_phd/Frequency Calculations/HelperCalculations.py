@@ -12,6 +12,14 @@ def getChirpMass(mass1, mass2):
 def getTotalMass(mass1, mass2):
     return(mass1 + mass2)
 
+def calculateAmplitude(SNR, t_obs):
+    #calculates approx amplitude from SNR^2 = int( h(t)^2 dt) - time avg over 0 to t_obs
+    return(np.sqrt(2)*SNR / np.sqrt(t_obs))
+
+def calculateAmplitude_phys(dl, chirpMass, freq0):
+    #calculates approx amplitude from SNR^2 = int( h(t)^2 dt) - time avg over 0 to t_obs
+    return(np.pi**2/3 * chirpMass**(5/3) * freq0**(2/3) / dl)
+
 def derivative(fx, params, h, i = 0):
     isParamsArray = isinstance(params, collections.abc.Sequence)
     isHArray = isinstance(h, collections.abc.Sequence)

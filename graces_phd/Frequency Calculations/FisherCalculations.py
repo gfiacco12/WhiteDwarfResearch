@@ -25,11 +25,11 @@ def GWsignal(t, t_obs, params):
     h = A * np.cos(2 * np.pi * phi)
     return h
 
-
-def calculateAmplitude(SNR, t_obs):
-    #calculates approx amplitude from SNR^2 = int( h(t)^2 dt) - time avg over 0 to t_obs
-    return(np.sqrt(2)*SNR / np.sqrt(t_obs))
-
+def getSNR(t_obs, A, phi0, f0, fD, fDD):
+    params = np.array([A, phi0, f0, fD, fDD])
+    integrand = lambda t: GWsignal(t, t_obs, params) * GWsignal(t, t_obs, params)
+    SNR = 2 * integrate.quad(integrand, 0, t_obs)
+    return(np.sqrt(SNR[0]))
 
 def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     #define parameters
