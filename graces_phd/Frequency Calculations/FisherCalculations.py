@@ -4,7 +4,7 @@ from const import *
 import scipy as sc
 from scipy import integrate, linalg
 import matplotlib.pyplot as plt
-from HelperCalculations import getParamsWithStep
+from HelperCalculations import getParamsWithStep, derivative
 
 def GWsignal(t, t_obs, params):
     #generates simple sinusoidal signal
@@ -31,33 +31,23 @@ def getSNR(t_obs, A, phi0, f0, fD, fDD):
 def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     #define parameters
     params = np.array([A, phi0, f0, fD, fDD])
-    h = np.array([[1.e-6, 0.001, 1.e3, 0.1, 0.001],
-                    [-1.e-6, -0.001, -1.e3, -0.1, -0.001]])
+    h = np.array([1.e-6, 0.001, 1.e3, 0.1, 0.001])
     label = [r'$A$', r'$\phi_{0}$',  r'$f_{0}$', r'$\dot{f}_{0}$', r'$\ddot{f}_{0}$']
 
     #initialize matrix and step size vectors
     fisher = np.zeros((np.size(params), np.size(params)))
 
     #set up finite difference method - upper and lower step sizes more robust
-    """ fx = lambda x, t : (GWsignal(t, t_obs, getParamsWithStep(params, x, h[x], True)) - 
-                        GWsignal(t, t_obs, getParamsWithStep(params, x, h[x], False))) / (2 * h[x])
-    """
-    #hang's method:  
-    for i in range(len(params)):
-        par_u = params.copy()
-        par_u += h[0,:]
-        par_l = params.copy()
-        par_l += h[1,:]
+    get_fx = lambda t : lambda p : (GWsignal(t, t_obs, p))
 
-        fx = lambda x, t: (GWsignal(t, t_obs, par_u) -  GWsignal(t, t_obs, par_l)) / (h[0, x] - h[1, x])
+    for i in range(len(params)):
         for j in range(len(params)):
-            integrationFunction = lambda t : fx(i, t) * fx(j, t)
+            di = lambda t : derivative(get_fx(t), params, h, i)
+            dj = lambda t : derivative(get_fx(t), params, h, j)
+            integrationFunction = lambda t : di(t) * dj(t)
             value = 2 * integrate.quad(integrationFunction, 0, t_obs)
-            fisher[i][j] = value[0]
-    #print(par_l)
-    #print(par_u)
-    #print(fisher)
-    #print("---------")
+            fisher[i, j] = value[0]
+
     sigma = linalg.inv(fisher)
 
     for i in range(len(params)):

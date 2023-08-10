@@ -1,10 +1,5 @@
-from numpy import number
 import numpy as np
 from const import *
-import scipy as sc
-from scipy import integrate, linalg
-import matplotlib.pyplot as plt
-import collections.abc
 
 def getChirpMass(mass1, mass2):
     return(((mass1*mass2)**(3/5)) / ((mass1 + mass2)**(1/5)))
@@ -21,8 +16,9 @@ def calculateAmplitude_phys(dl, chirpMass, freq0):
     return(np.pi**2/3 * chirpMass**(5/3) * freq0**(2/3) / dl)
 
 def derivative(fx, params, h, i = 0):
-    isParamsArray = isinstance(params, collections.abc.Sequence)
-    isHArray = isinstance(h, collections.abc.Sequence)
+    np.isscalar(params)
+    isParamsArray = not np.isscalar(params)
+    isHArray = not np.isscalar(h)
 
     if isParamsArray != isHArray:
         print("ERROR: Params and h must be the same size")
