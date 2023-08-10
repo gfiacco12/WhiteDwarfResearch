@@ -94,16 +94,10 @@ def getFrequency_ChirpTotalMass(freq0, params):
     fdot = fdot_pp * (1 + ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
     fddot = fdot_pp * (fdot/freq0) * ((11/3) + (13/3)*
                                       ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
-    print("Mc:",chirpMass)
-    print("Mt:",totalMass)
-    print(eta)
-    print(fdot_pp)
-    print(fdot)
-    print(fddot)
     return fdot, fddot
 
 
-def setupNewtonRaphson(freq0, mass1, mass2):
+def getFxAndJacobian(freq0, mass1, mass2):
     #root finding method for Mt and Mc from the 1PN GW equations
     #need initial freq, fD, fDD data, and your symmetric mass ratio guess (for now assume equal mass: eta = 1/4)
     #Need to define initial guesses first
@@ -114,12 +108,27 @@ def setupNewtonRaphson(freq0, mass1, mass2):
     step_size = [1.e-8, 1.e-8]
     jacobian = np.zeros((np.size(params_guess), np.size(params_guess)))
     
+    #defines F and gets Jacobian matrix
     for i in range(len(params_guess)):
         for j in range(len(params_guess)):
             fx = lambda params: getFrequency_ChirpTotalMass(freq0, params)[i]
             dF = lambda x: derivative(fx, params_guess, step_size, x)
             jacobian[i][j] = dF(j)
-    print(jacobian)
-    print("Mc guess:", chirpMass_guess)
-    print("Mt guess:", totalMass_guess)
     return
+
+def getNewtonRaphson(Fx, jacobian, guess, eps):
+   #iterate through, updating guesses each time
+    F_value = Fx
+    F_norm = np.linalg.norm(F_value, ord=2)  # l2 norm of vector
+    iteration_counter = 0
+    while abs(F_norm) > eps and iteration_counter < 100:
+        delta = np.linalg.solve(jacobian, -F_value)
+        guess = guess + delta
+        F_value = Fx
+        F_norm = np.linalg.norm(F_value, ord=2)
+        iteration_counter += 1   
+
+    # Here, either a solution is found, or too many iterations
+    if abs(F_norm) > eps:
+        iteration_counter = -1
+    return guess, iteration_counter
