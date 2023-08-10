@@ -18,9 +18,6 @@ def GWsignal(t, t_obs, params):
     beta = fD * t_obs**2
     gamma = fDD * t_obs**3
 
-    """     print("alpha:", alpha) #~ 1.2e6
-    print("beta:", beta) # ~210
-    print('gamma:', gamma) # ~ 0.1 """
     phi = phi0 + 2*np.pi*alpha*(t/t_obs) + np.pi*beta*(t/t_obs)**2 + (np.pi/3)*gamma*(t/t_obs)**3
     h = A * np.cos(2 * np.pi * phi)
     return h
@@ -34,23 +31,33 @@ def getSNR(t_obs, A, phi0, f0, fD, fDD):
 def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     #define parameters
     params = np.array([A, phi0, f0, fD, fDD])
-    h = np.array([1.e-6, 0.001, 1.e3, 0.1, 0.001])
+    h = np.array([[1.e-6, 0.001, 1.e3, 0.1, 0.001],
+                    [-1.e-6, -0.001, -1.e3, -0.1, -0.001]])
     label = [r'$A$', r'$\phi_{0}$',  r'$f_{0}$', r'$\dot{f}_{0}$', r'$\ddot{f}_{0}$']
-
 
     #initialize matrix and step size vectors
     fisher = np.zeros((np.size(params), np.size(params)))
 
-    fx = lambda x, t : (GWsignal(t, t_obs, getParamsWithStep(params, x, h[x], True)) - GWsignal(t, t_obs, getParamsWithStep(params, x, h[x], False))) / (2*h[x])
-
+    #set up finite difference method - upper and lower step sizes more robust
+    """ fx = lambda x, t : (GWsignal(t, t_obs, getParamsWithStep(params, x, h[x], True)) - 
+                        GWsignal(t, t_obs, getParamsWithStep(params, x, h[x], False))) / (2 * h[x])
+    """
+    #hang's method:  
     for i in range(len(params)):
+        par_u = params.copy()
+        par_u += h[0,:]
+        par_l = params.copy()
+        par_l += h[1,:]
+
+        fx = lambda x, t: (GWsignal(t, t_obs, par_u) -  GWsignal(t, t_obs, par_l)) / (h[0, x] - h[1, x])
         for j in range(len(params)):
             integrationFunction = lambda t : fx(i, t) * fx(j, t)
             value = 2 * integrate.quad(integrationFunction, 0, t_obs)
             fisher[i][j] = value[0]
-
+    #print(par_l)
+    #print(par_u)
     #print(fisher)
-    print("---------")
+    #print("---------")
     sigma = linalg.inv(fisher)
 
     for i in range(len(params)):
@@ -63,7 +70,7 @@ def inner_product(h1, h2, freq, psd):
     inner product
     """
     integrand = (np.conj(h1)*h2+h1*np.conj(h2))/psd
-    rho_sq = 2.*integrate.trapz(integrand, freq)
+    rho_sq = 2.*integrate.trapz((integrand/2), freq)
     return rho_sq
 
 def fisher(t_obs, A, phi0, f0, fD, fDD, psd):
@@ -96,7 +103,7 @@ def fisher(t_obs, A, phi0, f0, fD, fDD, psd):
     for i in range(nDof):
         for j in range(i):
             gamma[i, j]=gamma[j, i]
-    
+    print(gamma)
     print("---------")
     sigma = linalg.inv(gamma)
     label = [r'$A$', r'$\phi_{0}$', r'$\alpha$', r'$\beta$', r'$\gamma$']
