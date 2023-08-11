@@ -19,7 +19,7 @@ def main(freq0, mass1, mass2, dl, t_obs):
     amp_phys = calculateAmplitude_phys(dl, 0.522*MSOLAR, freq0)
     snr = getSNR(t_obs, amp_phys, 1.5, freq0, fD_1PN, fDD_1PN)
 
-    getFisherMatrix(t_obs, amp, 1.5, freq0, fD_1PN, fDD_1PN)
-    fisher(t_obs, amp, 1.5, freq0, fD_1PN, fDD_1PN, 1)
+    #getFisherMatrix(t_obs, amp, 1.5, freq0, fD_1PN, fDD_1PN)
+    #fisher(t_obs, amp, 1.5, freq0, fD_1PN, fDD_1PN, 1)
 
 main(10.e-3, 0.6*MSOLAR, 0.7*MSOLAR, 5.6e-20*KPCSEC, 4*SECSYEAR)
