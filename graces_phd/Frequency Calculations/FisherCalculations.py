@@ -18,7 +18,8 @@ def GWsignal(t, t_obs, params):
     beta = fD * t_obs**2
     gamma = fDD * t_obs**3
 
-    phi = phi0 + 2*np.pi*alpha*(t/t_obs) + np.pi*beta*(t/t_obs)**2 + (np.pi/3)*gamma*(t/t_obs)**3
+    phi_parameterized = phi0 + 2*np.pi*alpha*(t/t_obs) + np.pi*beta*(t/t_obs)**2 + (np.pi/3)*gamma*(t/t_obs)**3
+    phi = phi0 + 2*np.pi*f0*(t) + np.pi*fD*(t)**2 + (np.pi/3)*fDD*(t)**3
     h = A * np.cos(2 * np.pi * phi)
     return h
 
@@ -31,7 +32,14 @@ def getSNR(t_obs, A, phi0, f0, fD, fDD):
 def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     #define parameters
     params = np.array([A, phi0, f0, fD, fDD])
-    h = np.array([1.e-6, 0.001, 1.e3, 0.1, 0.001])
+    h_param = np.array([1.e-6, 0.001, 1.e3, 0.1, 0.001])
+    h = np.array([1.e-6, 0.001, 1.e-6, 1.e-17, 1.e-29])
+    h_test = []
+    for param in params:
+        stepsize = param/1.e3
+        h_test.append(stepsize)
+    print(h_test)    
+
     label = [r'$A$', r'$\phi_{0}$',  r'$f_{0}$', r'$\dot{f}_{0}$', r'$\ddot{f}_{0}$']
 
     #initialize matrix and step size vectors
@@ -51,5 +59,5 @@ def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     sigma = linalg.inv(fisher)
 
     for i in range(len(params)):
-        print('Error in %s: %e'%(label[i], np.sqrt(sigma[i, i])))
+        print('Error in %s: %e'%(label[i], np.sqrt(sigma[i, i])/params[i]))
     return fisher

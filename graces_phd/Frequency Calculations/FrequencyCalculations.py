@@ -14,12 +14,13 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
     eta = (chirpMass/totalMass)**(5/3)
     #0PN point particle freqD
     fdot_pp = 96/5*np.pi**(8/3)*freq0**(11/3)*chirpMass**(5/3)
-    fd_corr = ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3)
+    fd_corr = fdot_pp*((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3)
     #1PN freqD and freqDD
     ### Fix this ####
     fdot = fdot_pp * (1 + ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
     fddot = fdot_pp * (fdot/freq0) * ((11/3) + (13/3)*((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
     fddot_0PN = (11/3)*(fdot ** 2) / freq0
+    fddot_1PN = fddot_0PN*( (3/11)*(13/3)*((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
     delta_fddot = fddot - fddot_0PN 
 
     amp = np.pi**2/3 * chirpMass**(5/3) * freq0**(2/3) / dl
@@ -38,12 +39,13 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
     print("1PN Freq Second Derivative =", fddot, "Hz")
     print("1PN fdot corr:", fd_corr)
     print("The 1PN Fdd correction is:", delta_fddot, "Hz")
+    print("Test 1PN fdd corr:", fddot_1PN)
     print("amplitude:", amp)
     print("-----------------------------------------------")
     print("Frequency bin:", df)
     print("Change in Freq bin due to fdot:", dfd)
     print("Change in Freq bin due to fddot:", dfdd)
-    print("-----------------------------------------------") """
+    print("-----------------------------------------------") """ 
     return fdot, fddot
 
 
@@ -69,7 +71,7 @@ def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
     dfd = (1/t_obs**2)
     dfdd = (1/ t_obs**3)
 
-    """     print("TIDAL CORRECTION TERMS")
+    """ print("TIDAL CORRECTION TERMS")
     print("-----------------------------------------------")
     print("eta:", eta)
     print("0PN point particle fdot:", fdot_pp, "Hz")
@@ -82,7 +84,7 @@ def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
     print("Frequency bin:", df)
     print("Change in Freq bin due to fdot:", dfd)
     print("Change in Freq bin due to fddot:", dfdd)
-    print("-----------------------------------------------") """
+    print("-----------------------------------------------")  """
     return fdot, fddot
 
 
@@ -97,36 +99,64 @@ def getFrequency_ChirpTotalMass(freq0, params):
     return fdot, fddot
 
 
-def getFxAndJacobian(freq0, mass1, mass2):
+def getRootFinder(freq0, mass1, mass2):
     #root finding method for Mt and Mc from the 1PN GW equations
     #need initial freq, fD, fDD data, and your symmetric mass ratio guess (for now assume equal mass: eta = 1/4)
     #Need to define initial guesses first
     
     chirpMass_guess = getChirpMass(mass1, mass2)
     totalMass_guess = getTotalMass(mass1, mass2)
-    params_guess = [chirpMass_guess, totalMass_guess]
+    chirpMass_exact = getChirpMass( 0.6*MSOLAR,  1.*MSOLAR)
+    totalMass_exact = getTotalMass( 0.6*MSOLAR,  1.*MSOLAR)
+    params_guess = np.array([chirpMass_guess, totalMass_guess])
+    exact = [chirpMass_exact, totalMass_exact]
     step_size = [1.e-8, 1.e-8]
-    jacobian = np.zeros((np.size(params_guess), np.size(params_guess)))
+
+    def get_Jacobian(p):
+        jacobian = np.zeros((np.size(p), np.size(p)))
+        #defines F and gets Jacobian matrix
+        #ned to keep jacobian as a function
+        for i in range(len(p)):
+            for j in range(len(p)):
+                fx = lambda params: getFrequency_ChirpTotalMass(freq0, params)[i]
+                dF = lambda x, params: derivative(fx, params, step_size, x)
+                jacobian[i][j] = dF(j, p)
+        return jacobian
     
-    #defines F and gets Jacobian matrix
-    for i in range(len(params_guess)):
-        for j in range(len(params_guess)):
-            fx = lambda params: getFrequency_ChirpTotalMass(freq0, params)[i]
-            dF = lambda x: derivative(fx, params_guess, step_size, x)
-            jacobian[i][j] = dF(j)
+    #do the iteration
+    def get_F(p): 
+        fdot, fddot = getFrequency_ChirpTotalMass(freq0, p)
+        return np.array([fdot, fddot])
+
+    finalguess, iterations = getNewtonRaphson(get_F, get_Jacobian, params_guess, 1e-15)
+    print("Final Guess:",finalguess)
+    print("Real Values:", exact)
+    print(iterations)
     return
 
 def getNewtonRaphson(Fx, jacobian, guess, eps):
-   #iterate through, updating guesses each time
-    F_value = Fx
-    F_norm = np.linalg.norm(F_value, ord=2)  # l2 norm of vector
+    #iterate through, updating guesses each time
+    # F_value = Fx(guess)
+    # F_norm = np.linalg.norm(F_value, ord=2)  # l2 norm of vector
+    # iteration_counter = 0
+    # while abs(F_norm) > eps and iteration_counter < 100:
+    #     delta = np.linalg.solve(jacobian(guess), -F_value)
+    #     guess = guess + delta
+    #     F_value = Fx
+    #     F_norm = np.linalg.norm(F_value, ord=2)
+    #     iteration_counter += 1   
+    
     iteration_counter = 0
-    while abs(F_norm) > eps and iteration_counter < 100:
-        delta = np.linalg.solve(jacobian, -F_value)
-        guess = guess + delta
-        F_value = Fx
-        F_norm = np.linalg.norm(F_value, ord=2)
-        iteration_counter += 1   
+    while True:
+        iteration_counter += 1
+        F_value = Fx(guess)
+        F_norm = np.linalg.norm(F_value, ord=2)  # l2 norm of vector
+        if abs(F_norm) > eps and iteration_counter < 100:
+            j = jacobian(guess)
+            delta = np.linalg.solve(j, -F_value)
+            guess = guess + delta
+        else:
+            break
 
     # Here, either a solution is found, or too many iterations
     if abs(F_norm) > eps:
