@@ -15,32 +15,27 @@ def GWsignal(t, t_obs, params):
     fDD = params[4]
     #parameterize the signal - now params around order unity
     alpha = f0 * t_obs
-    beta = fD * t_obs**2
-    gamma = fDD * t_obs**3
+    beta = fD * (t_obs**2)
+    gamma = fDD * (t_obs**3)
 
     phi_parameterized = phi0 + 2*np.pi*alpha*(t/t_obs) + np.pi*beta*(t/t_obs)**2 + (np.pi/3)*gamma*(t/t_obs)**3
     phi = phi0 + 2*np.pi*f0*(t) + np.pi*fD*(t)**2 + (np.pi/3)*fDD*(t)**3
-    h = A * np.cos(2 * np.pi * phi)
+    h = A * np.cos(2 * np.pi * phi_parameterized)
     return h
 
 def getSNR(t_obs, A, phi0, f0, fD, fDD):
     params = np.array([A, phi0, f0, fD, fDD])
     integrand = lambda t: GWsignal(t, t_obs, params) * GWsignal(t, t_obs, params)
-    SNR = 2 * integrate.quad(integrand, 0, t_obs)
-    return(np.sqrt(SNR[0]))
+    SNR = integrate.quad(integrand, 0, t_obs)
+    return(np.sqrt(SNR[0] * 2))
 
 def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     #define parameters
+    params_2 = np.array([A, phi0, f0 * t_obs, fD*(t_obs**2), fDD*(t_obs**3)])
     params = np.array([A, phi0, f0, fD, fDD])
     h_param = np.array([1.e-6, 0.001, 1.e3, 0.1, 0.001])
     h = np.array([1.e-6, 0.001, 1.e-6, 1.e-17, 1.e-29])
-    h_test = []
-    for param in params:
-        stepsize = param/1.e3
-        h_test.append(stepsize)
-    print(h_test)    
-
-    label = [r'$A$', r'$\phi_{0}$',  r'$f_{0}$', r'$\dot{f}_{0}$', r'$\ddot{f}_{0}$']
+    label = [r'$A$', r'$\phi_{0}$',  r'$\alpha}$', r'$\beta$', r'$\gamma$']
 
     #initialize matrix and step size vectors
     fisher = np.zeros((np.size(params), np.size(params)))
@@ -50,14 +45,16 @@ def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
 
     for i in range(len(params)):
         for j in range(len(params)):
-            di = lambda t : derivative(get_fx(t), params, h, i)
-            dj = lambda t : derivative(get_fx(t), params, h, j)
+            di = lambda t : derivative(get_fx(t), params, h_param, i)
+            dj = lambda t : derivative(get_fx(t), params, h_param, j)
             integrationFunction = lambda t : di(t) * dj(t)
             value = integrate.quad(integrationFunction, 0, t_obs, limit=200)
             fisher[i, j] = value[0] * 2
 
+    for i in range(len(params)):
+        print('Parameter %s: %e'%(label[i], params_2[i]))
     sigma = linalg.inv(fisher)
 
     for i in range(len(params)):
-        print('Error in %s: %e'%(label[i], np.sqrt(sigma[i, i])/params[i]))
+        print('Error in %s: %e'%(label[i], np.sqrt(sigma[i, i])))
     return fisher

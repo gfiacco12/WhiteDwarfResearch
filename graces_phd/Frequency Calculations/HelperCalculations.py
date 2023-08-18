@@ -9,7 +9,7 @@ def getTotalMass(mass1, mass2):
 
 def calculateAmplitude(SNR, t_obs):
     #calculates approx amplitude from SNR^2 = int( h(t)^2 dt) - time avg over 0 to t_obs
-    return(np.sqrt(2)*SNR / np.sqrt(t_obs))
+    return(SNR / np.sqrt(t_obs))
 
 def calculateAmplitude_phys(dl, chirpMass, freq0):
     #calculates approx amplitude from SNR^2 = int( h(t)^2 dt) - time avg over 0 to t_obs
