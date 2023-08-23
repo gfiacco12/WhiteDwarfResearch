@@ -31,7 +31,7 @@ def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     beta = fD * (t_obs**2)
     gamma = fDD * (t_obs**3)
     params = np.array([A, phi0, alpha, beta, gamma])
-    h_param = np.array([1.e-6, 0.001, 1.e1, 0.1, 0.0001])
+    h_param = np.array([1.e-6, 0.001, 1.0, 0.1, 0.0001])
     
     label = [r'$A$', r'$\phi_{0}$',  r'$\alpha}$', r'$\beta$', r'$\gamma$']
     

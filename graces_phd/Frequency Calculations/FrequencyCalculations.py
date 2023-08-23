@@ -94,61 +94,56 @@ def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
     return fdot, fddot
 
 
-def getFrequency_ChirpTotalMass(freq0, params):
+def getFrequency_ChirpTotalMass(freq0, params, true_frequencies):
     chirpMass, totalMass = params
-    chirpMass = max(chirpMass, 1.e-10)
-    totalMass = max(totalMass, 1.e-10)
+    # chirpMass = max(chirpMass, 1.e-10)
+    # totalMass = max(totalMass, 1.e-10)
 
-    """ #Scale values closer to unity - mHz/ ms
-    chirpMass *= 1.e3
-    totalMass *= 1.e3
-    freq0 *= 1.e3 """
+    #Scale values closer to unity - mHz/ ms
+    # scale = 1.e3
+    # chirpMass *= scale
+    # totalMass *= scale
+    # freq0 *= scale
     
     eta = ( chirpMass / totalMass )**(5/3)
 
-    fdot_pp = 96/5*np.pi**(8/3)*freq0**(11/3)*chirpMass**(5/3)
+    fdot_pp = (96/5)*(np.pi**(8/3))*(freq0**(11/3))*(chirpMass**(5/3))
     fdot = fdot_pp * (1 + ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
+
     fddot = fdot_pp * (fdot/freq0) * ((11/3) + (13/3)*
-                                      ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
-    fdot *= 1.e-2
-    fddot *= 1.e-2
-    print("fdot:", fdot, fddot)
-    return fdot , fddot
+                                      ((743/1344)-(11*eta/16))*((8*np.pi*totalMass*freq0)**(2/3)))
+
+    scale = 1.e0
+    fdot *= scale
+    fddot *= scale
+    fdot_true = true_frequencies[0] * scale
+    fddot_true = true_frequencies[1] * scale
+
+    return [fdot - fdot_true, fddot - fddot_true]
 
 
-def getRootFinder(freq0, mass1, mass2):
+def getRootFinder(freq0, fd, fdd, mass1, mass2):
     #root finding method for Mt and Mc from the 1PN GW equations
+
+    mass1_exact = 0.7*MSOLAR
+    mass2_exact = 0.6*MSOLAR
 
     chirpMass_guess = getChirpMass(mass1, mass2)
     totalMass_guess = getTotalMass(mass1, mass2)
-    chirpMass_exact = getChirpMass( 0.6*MSOLAR,  1.*MSOLAR)
-    totalMass_exact = getTotalMass( 0.6*MSOLAR,  1.*MSOLAR)
+
+    chirpMass_exact = getChirpMass(mass1_exact, mass2_exact)
+    totalMass_exact = getTotalMass(mass1_exact, mass2_exact)
+
     params_guess = np.array([chirpMass_guess, totalMass_guess])
     exact = [chirpMass_exact, totalMass_exact]
-    step_size = [1.e-8, 1.e-8]
 
-    def jacobian(p):
-        jacobian = np.zeros((np.size(p), np.size(p)))
-        #defines F and gets Jacobian matrix
-        #ned to keep jacobian as a function
-        for i in range(len(p)):
-            for j in range(len(p)):
-                fx = lambda params: getFrequency_ChirpTotalMass(freq0, params)[i]
-                dF = lambda x, params: derivative(fx, params, step_size, x)
-                jacobian[i][j] = dF(j, p)
-        return jacobian
-    
     #do the iteration
-    def fx(p): 
-        fdot, fddot = getFrequency_ChirpTotalMass(freq0, p)
-        return np.array([fdot, fddot])
-    
-    """ def fx_t(chirp, total): 
-        fdot, fddot = getFrequency_ChirpTotalMass(freq0, [chirp, total])
-        return (fdot, fddot) """
+    fx = lambda p : getFrequency_ChirpTotalMass(freq0, p, [fd, fdd])
 
     finalguess = optimize.fsolve(fx, params_guess)
-    print("Final Guess:",finalguess)
+    print(np.isclose([fx(finalguess)], [0.0, 0.0]))
+
+    print("Final Guess:", finalguess)
     print("Real Values:", exact)
     return
 
