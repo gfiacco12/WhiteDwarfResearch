@@ -10,17 +10,13 @@ def GWsignal(t, t_obs, params):
     #generates simple sinusoidal signal
     A = params[0]
     phi0 = params[1]
-    f0 = params[2]
-    fD = params[3]
-    fDD = params[4]
+    alpha = params[2]
+    beta = params[3]
+    gamma = params[4]
     #parameterize the signal - now params around order unity
-    alpha = f0 * t_obs
-    beta = fD * (t_obs**2)
-    gamma = fDD * (t_obs**3)
-
-    phi_parameterized = phi0 + 2*np.pi*alpha*(t/t_obs) + np.pi*beta*(t/t_obs)**2 + (np.pi/3)*gamma*(t/t_obs)**3
-    phi = phi0 + 2*np.pi*f0*(t) + np.pi*fD*(t)**2 + (np.pi/3)*fDD*(t)**3
-    h = A * np.cos(2 * np.pi * phi_parameterized)
+    phi_parameterized = phi0 + 2*np.pi*alpha*(t/t_obs) + (np.pi)*beta*(t/t_obs)**2 + (np.pi/3)*gamma*(t/t_obs)**3
+    #phi = phi0 + 2*np.pi*f0*(t) + np.pi*fD*(t)**2 + (np.pi/3)*fDD*(t)**3
+    h = A * np.cos(phi_parameterized)
     return h
 
 def getSNR(t_obs, A, phi0, f0, fD, fDD):
@@ -31,11 +27,16 @@ def getSNR(t_obs, A, phi0, f0, fD, fDD):
 
 def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
     #define parameters
-    params_2 = np.array([A, phi0, f0 * t_obs, fD*(t_obs**2), fDD*(t_obs**3)])
-    params = np.array([A, phi0, f0, fD, fDD])
-    h_param = np.array([1.e-6, 0.001, 1.e3, 0.1, 0.001])
-    h = np.array([1.e-6, 0.001, 1.e-6, 1.e-17, 1.e-29])
+    alpha = f0 * t_obs
+    beta = fD * (t_obs**2)
+    gamma = fDD * (t_obs**3)
+    params = np.array([A, phi0, alpha, beta, gamma])
+    h_param = np.array([1.e-6, 0.001, 1.e1, 0.1, 0.0001])
+    
     label = [r'$A$', r'$\phi_{0}$',  r'$\alpha}$', r'$\beta$', r'$\gamma$']
+    
+    """ h = np.array([1.e-6, 0.001, 1.e-6, 1.e-17, 1.e-29])
+    label2 = [r'$A$', r'$\phi_{0}$',  r'$f_{0}$', r'$\dot{f}$', r'$\ddot{f}$'] """
 
     #initialize matrix and step size vectors
     fisher = np.zeros((np.size(params), np.size(params)))
@@ -50,10 +51,13 @@ def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
             integrationFunction = lambda t : di(t) * dj(t)
             value = integrate.quad(integrationFunction, 0, t_obs, limit=200)
             fisher[i, j] = value[0] * 2
-
+    print(fisher)
     for i in range(len(params)):
-        print('Parameter %s: %e'%(label[i], params_2[i]))
+        print('Parameter %s: %e'%(label[i], params[i]))
     sigma = linalg.inv(fisher)
+    print("alp:", f0*t_obs)
+    print("beta:", fD * (t_obs**2))
+    print("gamma:", fDD * (t_obs**3))
 
     for i in range(len(params)):
         print('Error in %s: %e'%(label[i], np.sqrt(sigma[i, i])))
