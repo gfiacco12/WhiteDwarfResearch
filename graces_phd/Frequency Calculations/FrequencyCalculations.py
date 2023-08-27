@@ -35,18 +35,18 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
     dfd = (1/t_obs**2)
     dfdd = (1/ t_obs**3)
 
-    print("1PN CORRECTION TERMS")
-    print("-----------------------------------------------")
-    print("eta:", eta)
-    print("0PN point particle fdot:", fdot_pp * t_obs**2, "Hz")
-    print("1PN Freq Derivative =", fdot, "Hz")
-    print("1PN Freq Second Derivative =", fddot, "Hz")
-    print("Test 1PN fdd corr:", fddot_1PN)
-    print("-----------------------------------------------")
-    print("Frequency bin:", df)
-    print("Change in Freq bin due to fdot:", dfd)
-    print("Change in Freq bin due to fddot:", dfdd)
-    print("-----------------------------------------------")
+    # print("1PN CORRECTION TERMS")
+    # print("-----------------------------------------------")
+    # print("eta:", eta)
+    # print("0PN point particle fdot:", fdot_pp * t_obs**2, "Hz")
+    # print("1PN Freq Derivative =", fdot, "Hz")
+    # print("1PN Freq Second Derivative =", fddot, "Hz")
+    # print("Test 1PN fdd corr:", fddot_1PN)
+    # print("-----------------------------------------------")
+    # print("Frequency bin:", df)
+    # print("Change in Freq bin due to fdot:", dfd)
+    # print("Change in Freq bin due to fddot:", dfdd)
+    # print("-----------------------------------------------")
     return fdot, fddot
 
 
@@ -72,22 +72,22 @@ def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
     dfd = (1/t_obs**2)
     dfdd = (1/ t_obs**3)
 
-    """ print("TIDAL CORRECTION TERMS")
+    print("TIDAL CORRECTION TERMS")
     print("-----------------------------------------------")
-    print("eta:", eta)
-    print("0PN point particle fdot:", fdot_pp, "Hz")
-    print("0PN freqDD:", fddot_0PN*t_obs**3, "Hz")
+    #print("eta:", eta)
+    #print("0PN point particle fdot:", fdot_pp, "Hz")
+    #print("0PN freqDD:", fddot_0PN*t_obs**3, "Hz")
     print("Tides Freq Derivative =", fdot, "Hz")
-    print("Tides Freq Derivative Correction=", fd_corr * t_obs**2, "Hz")
+    #print("Tides Freq Derivative Correction=", fd_corr * t_obs**2, "Hz")
     print("Tides Freq Second Derivative =", fddot, "Hz")
-    print("The Tidal Fdd correction is:", delta_fddot * t_obs**3, "Hz")
-    print("Tides Freq Derivative Dimensionless=", fdot * t_obs**2, "Hz")
-    print("Tides Freq Second Derivative Dimensionless=", fddot * t_obs**3, "Hz")
+    #print("The Tidal Fdd correction is:", delta_fddot * t_obs**3, "Hz")
+    #print("Tides Freq Derivative Dimensionless=", fdot * t_obs**2, "Hz")
+    #print("Tides Freq Second Derivative Dimensionless=", fddot * t_obs**3, "Hz")
     print("-----------------------------------------------")
-    print("Frequency bin:", df)
-    print("Change in Freq bin due to fdot:", dfd)
-    print("Change in Freq bin due to fddot:", dfdd)
-    print("-----------------------------------------------") """
+    #print("Frequency bin:", df)
+    #print("Change in Freq bin due to fdot:", dfd)
+    #print("Change in Freq bin due to fddot:", dfdd)
+    #print("-----------------------------------------------") 
     return fdot, fddot
 
 
@@ -108,8 +108,32 @@ def getFrequency_ChirpTotalMass(freq0, params, results_exact):
     F[1] = fddot - results_exact[1]
     return F
 
+def getFrequency_ComponentMass(freq0, params, results_exact):
+    mass1, mass2 = params
 
-def getRootFinder(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
+    mass1 = max(mass1, 1.e-30)
+    mass2 = max(mass2, 1.e-30)
+    
+    chirpMass = ((mass1*mass2)**(3/5)) / ((mass1 + mass2)**(1/5))
+
+    fdot_pp = (96 * (np.pi**(8/3)) * (chirpMass**(5/3)) * (freq0**(11/3))) / 5
+    
+    I_wd = 8.51e-10 * ((mass1/(0.6*MSOLAR))**(1/3) + (mass2/(0.6*MSOLAR))**(1/3))
+    I_orb = chirpMass**(5/3) / ((np.pi*freq0)**(4/3))
+
+
+    fdot = fdot_pp * (1 + ((3*I_wd/I_orb)/(1 - (3*I_wd/I_orb))) )
+    fddot = (11/3)*(fdot_pp**2/freq0 )* ((1 - (21/11)*(I_wd/I_orb)) / ((1 - (3*I_wd/I_orb))**3))
+
+    fdot_isNaN = np.isnan(fdot)
+    fddot_isNaN = np.isnan(fddot)
+
+    F=np.zeros(2)
+    F[0] = fdot - results_exact[0]
+    F[1] = fddot - results_exact[1]
+    return F
+
+def getRootFinder_1PN(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
     #root finding method for Mt and Mc from the 1PN GW equations
 
     chirpMass_guess = getChirpMass(mass1_guess, mass2_guess)
@@ -136,34 +160,37 @@ def getRootFinder(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess, mas
     fx = lambda p : getFrequency_ChirpTotalMass(freq0, p, results_exact)
 
     final_guess = optimize.newton(fx, params_guess, tol=1.e-15, maxiter=10000)
-    #final_guess = optimize.root(fx, params_guess, method="krylov", tol=1.e-10 )
 
-    # final_guess = optimize.fsolve(fx, params_guess, fprime=get_Jacobian, xtol=1.e-10, maxfev=10000)
+    # for i in range(len(final_guess)):
+    #     final_guess[i] /= MSOLAR
+    #     params_exact[i] /= MSOLAR
+
+    print("Final Guess:", final_guess)
+    print(fx(final_guess))
+    print("Real Values:", params_exact )
+    print(fx(params_exact))
+    return
+
+def getRootFinder_tides(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
+    #root finding method for Mt and Mc from the 1PN GW equations
+
+    params_guess = [mass1_guess, mass2_guess]
+
+    params_exact = [mass1_exact, mass2_exact]
+
+    results_exact = [fdot, fddot]
+
+    #do the iteration
+    fx = lambda p : getFrequency_ComponentMass(freq0, p, results_exact)
+
+    final_guess = optimize.newton(fx, params_guess, tol=1.e-15, maxiter=1000000)
 
     for i in range(len(final_guess)):
         final_guess[i] /= MSOLAR
         params_exact[i] /= MSOLAR
 
     print("Final Guess:", final_guess)
-    #print("Final Guess P:", fx([final_guess[0], final_guess[1]]))
+    # print(fx(final_guess))
     print("Real Values:", params_exact )
-    #print("Real Values P:", fx(params_exact))
+    # print(fx(params_exact))
     return
-
-def getNewtonRaphson(fx, fx_t, jacobian, guess, eps, maxiter):
-    i = 0
-
-    while True:
-        i += 1
-        jacobianX = jacobian(guess)
-        hessianX = torch.autograd.functional.hessian(fx_t, (torch.tensor(guess[0]), torch.tensor(guess[1])), create_graph=True)
-
-        delta = np.linalg.multi_dot([np.linalg.inv(hessianX), jacobianX])
-        guess = guess - delta
-
-        if np.linalg.norm(delta) < eps or i >= maxiter:
-            if i >= maxiter:
-                i = -1
-            break
-
-    return guess, i 
