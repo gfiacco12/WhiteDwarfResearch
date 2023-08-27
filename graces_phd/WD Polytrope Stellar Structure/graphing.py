@@ -272,7 +272,9 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
     alpha_poly_spin8 = f1(0.8*omg, popt2[0], popt2[1], popt2[2])
     alpha_poly_spin9 = f1(0.9*omg, popt2[0], popt2[1], popt2[2])
     alpha_poly_spin_max = f1(omg, popt2[0], popt2[1], popt2[2])
+    
     IvsM_omega_fit = f1(Mass_9, popt1[0], popt1[1], popt1[2])
+
     ref_total_fit =  (IvsM_omega_fit)*(alpha_poly_ref)
     spin2_total_fit = (IvsM_omega_fit)/(alpha_poly_spin2)
     spin3_total_fit = (IvsM_omega_fit)/(alpha_poly_spin3)
