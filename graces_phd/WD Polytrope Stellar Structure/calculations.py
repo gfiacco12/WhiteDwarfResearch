@@ -148,6 +148,7 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
         #also get 0th order moment of inertia
         integrationResultsWithStop: list[InertiaState]
         integrationResultsWithStop, t = initialstate.integrateSelf(InertiaState, r0, a, stop_condition)
+        
         final_masses_withStop.append(integrationResultsWithStop[-1].TotalMass)
         final_m_withStop.append(integrationResultsWithStop[-1].SolarMass)
         final_m2_withStop.append(integrationResultsWithStop[-1].SolarMass2)
@@ -156,7 +157,6 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
         final_I2_withStop.append(integrationResultsWithStop[-1].I2)
     
     #obtain scaling for angular velocity for M and I2
-    #omega = np.linspace(omg, 0, 3) # Note: eventually convert this to frequencies not angular
     omega = np.linspace(omg, 0, 11)
     finalScaledMasses = []
     finalScaledM2 = []
@@ -176,13 +176,15 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
                 omega_prev = omega[j-1]
                 M2_scaled = getScaledMass2(M2_scaled, omega_j, omega_prev)
                 I2_scaled = getScaledInertia2(I2_scaled, omega_j, omega_prev)
-            finalScaledM2[i].append(M2_scaled)
+            
+            finalScaledM2[i].append(M2_scaled)  
             scaledMasses = getScaledTotalMass(final_m_withStop[i], M2_scaled)
             finalScaledMasses[i].append(scaledMasses)
+
             finalScaledI2[i].append(I2_scaled)
             scaledInertia = getScaledTotalInertia(final_I0_withStop[i], I2_scaled)
             finalScaledInertia[i].append(scaledInertia)
 
     plot2DMassInertiaVelocity(finalScaledMasses, finalScaledI2)
-
+    
     #plotMassInertiaRelation(final_masses_withStop, final_I_withStop)

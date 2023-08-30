@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from HelperCalculations import *
 from FisherCalculations import getParamsWithStep
 import sympy as sp
-import torch
+
 
 def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
 
