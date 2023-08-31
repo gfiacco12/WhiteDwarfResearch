@@ -1,3 +1,4 @@
+import math
 from numpy import number
 import numpy as np
 from const import *
@@ -25,40 +26,42 @@ def getSNR(t_obs, A, phi0, f0, fD, fDD):
     SNR = integrate.quad(integrand, 0, t_obs)
     return(np.sqrt(SNR[0] * 2))
 
-def getFisherMatrix(t_obs, A, phi0, f0, fD, fDD):
-    #define parameters
-    alpha = f0 * t_obs
-    beta = fD * (t_obs**2)
-    gamma = fDD * (t_obs**3)
-    params = np.array([A, phi0, alpha, beta, gamma])
-    h_param = np.array([1.e-6, 0.001, 1.0, 0.1, 0.0001])
-    
-    label = [r'$A$', r'$\phi_{0}$',  r'$\alpha}$', r'$\beta$', r'$\gamma$']
-    
-    """ h = np.array([1.e-6, 0.001, 1.e-6, 1.e-17, 1.e-29])
-    label2 = [r'$A$', r'$\phi_{0}$',  r'$f_{0}$', r'$\dot{f}$', r'$\ddot{f}$'] """
+def getFisherMatrix(t_obs, func, params, labels_params = []):
+    # generate labels / assert the number is right
+    if len(labels_params) == 0:
+        labels_params = np.arange(0, len(params))
+    else:
+        assert(len(params) == len(labels_params))
+
+    # generate step size
+    h_params = []
+    for param in params:
+        order_of_magnitude = math.floor(math.log10(param))
+        order_of_magnitude -= 6
+        h_params.append(10**order_of_magnitude)
 
     #initialize matrix and step size vectors
     fisher = np.zeros((np.size(params), np.size(params)))
 
     #set up finite difference method - upper and lower step sizes more robust
-    get_fx = lambda t : lambda p : (GWsignal(t, t_obs, p))
+    get_fx = lambda t : lambda p : func(t, p)
 
     for i in range(len(params)):
         for j in range(len(params)):
-            di = lambda t : derivative(get_fx(t), params, h_param, i)
-            dj = lambda t : derivative(get_fx(t), params, h_param, j)
+            di = lambda t : derivative(get_fx(t), params, h_params, i)
+            dj = lambda t : derivative(get_fx(t), params, h_params, j)
             integrationFunction = lambda t : di(t) * dj(t)
             value = integrate.quad(integrationFunction, 0, t_obs, limit=200)
             fisher[i, j] = value[0] * 2
+            
     print(fisher)
     for i in range(len(params)):
-        print('Parameter %s: %e'%(label[i], params[i]))
+        print('Parameter %s: %e'%(labels_params[i], params[i]))
+
     sigma = linalg.inv(fisher)
-    print("alp:", f0*t_obs)
-    print("beta:", fD * (t_obs**2))
-    print("gamma:", fDD * (t_obs**3))
+    print(sigma)
 
     for i in range(len(params)):
-        print('Error in %s: %e'%(label[i], np.sqrt(sigma[i, i])))
+        print('Error in %s: %e'%(labels_params[i], np.sqrt(sigma[i, i])))
+
     return fisher

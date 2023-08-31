@@ -20,7 +20,21 @@ def main(freq0, mass1, mass2, dl, t_obs):
     amp_phys = calculateAmplitude_phys(dl, 0.564*MSOLAR, freq0)
     snr = getSNR(t_obs, amp_phys, 1.5, freq0, fD_1PN, fDD_1PN)
 
-    getFisherMatrix(t_obs, amp, 1.5, freq0, fD_tide, fDD_tide)
+    def fisher(fd, fdd):
+        fx = lambda t, p : GWsignal(t, t_obs, p)
+        alpha = freq0 * t_obs
+        beta = fd * (t_obs**2)
+        gamma = fdd * (t_obs**3)
+        getFisherMatrix(
+            t_obs, 
+            fx, 
+            np.array([amp, 1.5, alpha, beta, gamma])
+            [r'$A$', r'$\phi_{0}$',  r'$\alpha}$', r'$\beta$', r'$\gamma$']
+        )
+    
+    fisher(fD_1PN, fDD_1PN)
+    fisher(fD_tide, fDD_tide)
+
     # print("delta alpha = ", (3**(1/2))/(8**(1/2)*np.pi*100))
     # print("delta beta = ", (5**(1/2))/(np.pi*100))
     # print("delta gamma = ", (3*(7**(1/2)))/(np.pi*100))
