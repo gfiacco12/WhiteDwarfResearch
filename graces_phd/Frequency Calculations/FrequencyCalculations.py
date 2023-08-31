@@ -5,7 +5,6 @@ import scipy as sc
 from scipy import integrate, linalg, optimize
 import matplotlib.pyplot as plt
 from HelperCalculations import *
-from FisherCalculations import getParamsWithStep
 import sympy as sp
 
 
@@ -49,12 +48,18 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
     # print("-----------------------------------------------")
     return fdot, fddot
 
-
-def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
-
-    chirpMass = getChirpMass(mass1, mass2)
-    totalMass = getTotalMass(mass1, mass2)
+def Frequency_Tides(freq0, chirpMass, totalMass, t_obs):
     eta = (chirpMass/totalMass)**(5/3)
+    deltaM = np.sqrt(1 - 4*eta)
+    mass1 = totalMass * (1 + deltaM) / 2
+    mass2 = totalMass * (1 - deltaM) / 2
+    return Frequency_Tides_Internal(freq0, chirpMass, mass1, mass2, t_obs)
+
+def Frequency_Tides_Masses(freq0, mass1, mass2, t_obs):
+    chirpMass = getChirpMass(mass1, mass2)
+    return Frequency_Tides_Internal(freq0, chirpMass, mass1, mass2, t_obs)
+    
+def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
     #0PN point particle freqD
     fdot_pp = 96/5*np.pi**(8/3)*freq0**(11/3)*chirpMass**(5/3)
     
@@ -72,18 +77,18 @@ def Frequency_Tides(freq0, mass1, mass2, dl, t_obs):
     dfd = (1/t_obs**2)
     dfdd = (1/ t_obs**3)
 
-    print("TIDAL CORRECTION TERMS")
-    print("-----------------------------------------------")
+    #print("TIDAL CORRECTION TERMS")
+    #print("-----------------------------------------------")
     #print("eta:", eta)
     #print("0PN point particle fdot:", fdot_pp, "Hz")
     #print("0PN freqDD:", fddot_0PN*t_obs**3, "Hz")
-    print("Tides Freq Derivative =", fdot, "Hz")
+    #print("Tides Freq Derivative =", fdot, "Hz")
     #print("Tides Freq Derivative Correction=", fd_corr * t_obs**2, "Hz")
-    print("Tides Freq Second Derivative =", fddot, "Hz")
+    #print("Tides Freq Second Derivative =", fddot, "Hz")
     #print("The Tidal Fdd correction is:", delta_fddot * t_obs**3, "Hz")
     #print("Tides Freq Derivative Dimensionless=", fdot * t_obs**2, "Hz")
     #print("Tides Freq Second Derivative Dimensionless=", fddot * t_obs**3, "Hz")
-    print("-----------------------------------------------")
+    #print("-----------------------------------------------")
     #print("Frequency bin:", df)
     #print("Change in Freq bin due to fdot:", dfd)
     #print("Change in Freq bin due to fddot:", dfdd)
