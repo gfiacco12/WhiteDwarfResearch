@@ -143,23 +143,26 @@ def plot3DMassInertiaVelocity(totalMasses, totalInertia, omega):
     ax.set_title("Mass-Inertia-Spin Relation")
     plt.show()
 
-def plot2DMassInertiaVelocity(totalMasses, totalInertia):
+def plot2DMassInertiaVelocity(totalMasses, inertia2_correction, totalInertia):
     #need to be 2D arrays. We want the ROWS of the inputs
-    for i in range(len(totalInertia)):
+    for i in range(len(inertia2_correction)):
         totalMasses[i:].sort()
+        inertia2_correction[i:].sort()
         totalInertia[i:].sort()
-
+    print(np.shape(totalInertia))
     #we're taking second to last so it's not 0
     MassN = [mass[-2] for mass in totalMasses]
-    inertiaN = [inertia[-2] for inertia in totalInertia]
+    inertiaN = [inertia[-2] for inertia in inertia2_correction]
 
     ref_masses = []
     ref_inertias = []
+    ref_inertia0s = []
 
     for i in range(len(MassN)):
         if MassN[i] >= 0.20:
             ref_masses.append(MassN[i])
             ref_inertias.append(inertiaN[i]/10**48)
+            ref_inertia0s.append(totalInertia[i]/10**48)
 
     #fitting the scaling factors for range of spins from above
     alpha_alt = [1,(19.85*omg)**2, (13.2*omg)**2, (9.9*omg)**2, (7.9*omg)**2, (6.6*omg)**2, 
@@ -189,11 +192,26 @@ def plot2DMassInertiaVelocity(totalMasses, totalInertia):
         alpha_polynomial_fit = f1(omega[i], popt2[0], popt2[1], popt2[2])
         total_fit = IvsM_omega_fit / alpha_polynomial_fit   
         scale = round(omega[i] / omg, 1) 
-        plt.plot(ref_masses, total_fit, label = "total fit, $\Omega$ = %s$\Omega_{max}$"%scale)
+        plt.plot(ref_masses, total_fit, label = "$\Omega$ = %s$\Omega_{max}$"%scale)
 
-    plt.title("Total Fit for Moment of Inertia and Mass as Function of Spin")
-    plt.xlabel("Total Mass")
-    plt.ylabel("Moment of Inertia, $I^{(2)}$")
+    plt.title("Total Fit for Moment of Inertia Correction vs Mass as Function of Spin")
+    plt.xlabel("Total Mass ($M_{\odot}$)")
+    plt.ylabel("Moment of Inertia, $I^{(2)}x10^{48} (gcm^{2})$")
+    plt.yscale("log")
+    plt.legend()
+    plt.show()
+
+    plt.figure()
+    for i in range(len(omega)):  
+        alpha_polynomial_fit = f1(omega[i], popt2[0], popt2[1], popt2[2])
+        total_fit = IvsM_omega_fit / alpha_polynomial_fit   
+        scale = round(omega[i] / omg, 1) 
+        totalFit_totalInertia = ref_inertia0s + total_fit
+        plt.plot(ref_masses, totalFit_totalInertia, label = "$\Omega$ = %s$\Omega_{max}$"%scale)
+
+    plt.title("Total Fit for Total Moment of Inertia vs Mass as Function of Spin")
+    plt.xlabel("Total Mass ($M_{\odot}$)")
+    plt.ylabel("Total Moment of Inertia, ($I^{(0)}+I^{(2)})x10^{48} (gcm^{2})$")
     plt.yscale("log")
     plt.legend()
     plt.show()

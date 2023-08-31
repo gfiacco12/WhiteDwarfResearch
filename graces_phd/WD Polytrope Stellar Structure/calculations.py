@@ -185,6 +185,6 @@ def getFinalMassesVsFinalInertia(start: number, end: number, steps: number, r0: 
             scaledInertia = getScaledTotalInertia(final_I0_withStop[i], I2_scaled)
             finalScaledInertia[i].append(scaledInertia)
 
-    plot2DMassInertiaVelocity(finalScaledMasses, finalScaledI2)
+    plot2DMassInertiaVelocity(finalScaledMasses, finalScaledI2, final_I0_withStop)
     
     #plotMassInertiaRelation(final_masses_withStop, final_I_withStop)
