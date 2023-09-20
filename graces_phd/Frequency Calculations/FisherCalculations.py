@@ -16,7 +16,7 @@ def GWsignal(t, t_obs, params):
     beta = params[3]
     gamma = params[4]
     #parameterize the signal - now params around order unity
-    phi_parameterized = phi0 + 2*np.pi*alpha*(t/t_obs) + (np.pi)*beta*(t/t_obs)**2 + (np.pi/3)*gamma*(t/t_obs)**3
+    phi_parameterized = phi0 + 2*np.pi*alpha*(t/t_obs) + (np.pi)*beta*(t/t_obs)**2 + (np.pi/3)*gamma*(t/t_obs)**3 
     #phi = phi0 + 2*np.pi*f0*(t) + np.pi*fD*(t)**2 + (np.pi/3)*fDD*(t)**3
     h = A * np.cos(phi_parameterized)
     return h
@@ -46,7 +46,7 @@ def GWsignal_chirpTotal(t, t_obs, params):
 
 def GWSignal_Tides(t, A, phi0, f0, fD, fDD):
     #parameterize the signal - now params around order unity
-    phi = phi0 + 2*np.pi*f0*(t) + np.pi*fD*(t)**2 + (np.pi/3)*fDD*(t)**3
+    phi = phi0 + 2*np.pi*f0*(t) + np.pi*fD*(t)**2 + (np.pi/3)*fDD*(t)**3 
     h = A * np.cos(phi)
     return h
 
@@ -95,4 +95,4 @@ def getFisherMatrix(t_obs, func, params, labels_params = []):
     for i in range(len(params)):
         print('Error in %s: %e'%(labels_params[i], np.sqrt(sigma[i, i])))
 
-    return fisher
+    return sigma

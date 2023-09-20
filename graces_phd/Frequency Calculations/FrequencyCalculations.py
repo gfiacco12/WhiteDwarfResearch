@@ -21,10 +21,11 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
 
     fdot = fdot_pp * (1 + ((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
     fddot = fdot_pp * (fdot/freq0) * ((11/3) + (13/3)*((743/1344)-(11*eta/16))*((8*np.pi*totalMass*freq0)**(2/3)))
-    fddot_0PN = (11/3)*(fdot * fdot_pp) / freq0
+    fddot_0PN = (11/3)*(fdot_pp**2) / freq0
     fddot_1PN = fddot_0PN*( (3/11)*(13/3)*((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
-    
-    
+    fdddot_1PN = (19/3) * ((fdot * fddot) / freq0) * ( 1 + (2/19) * (fdot_pp / fdot) * (1 + ((13/3)*(fdot**2 / (freq0 * fddot)))) * (((743/1344)-(11*eta/16))*((8*np.pi*totalMass*freq0)**(2/3))) )
+
+    delta_fddot_v1 = fddot - (11/3)* (fdot**2 / freq0)
     delta_fddot = fddot - fddot_0PN 
 
     amp = np.pi**2/3 * chirpMass**(5/3) * freq0**(2/3) / dl
@@ -39,14 +40,21 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
     # print("eta:", eta)
     # print("0PN point particle fdot:", fdot_pp * t_obs**2, "Hz")
     # print("1PN Freq Derivative =", fdot, "Hz")
-    # print("1PN Freq Second Derivative =", fddot, "Hz")
+    print("1PN Alpha =", freq0 * (t_obs))
+    print("1PN Beta =", fdot * (t_obs)**2)
+    print("1PN Gamma =", fddot * (t_obs)**3)
+    print("1PN fdddot:", fdddot_1PN)
+    print("delta fdd (0PN):", delta_fddot * (t_obs)**3)
+    print("1PN delta:", delta_fddot_v1* (t_obs)**3)
+    print("1PN fdddot Unitless:", fdddot_1PN * t_obs**4)
     # print("Test 1PN fdd corr:", fddot_1PN)
+
     # print("-----------------------------------------------")
     # print("Frequency bin:", df)
     # print("Change in Freq bin due to fdot:", dfd)
     # print("Change in Freq bin due to fddot:", dfdd)
     # print("-----------------------------------------------")
-    return fdot, fddot
+    return fdot, fddot, fdddot_1PN 
 
 def Frequency_Tides(freq0, chirpMass, totalMass, t_obs):
     eta = (chirpMass/totalMass)**(5/3)
@@ -69,7 +77,9 @@ def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
     fdot = fdot_pp * (1 + ((3*I_wd/I_orb)/(1 - (3*I_wd/I_orb))) )
     fddot = (11/3)*(fdot_pp**2/freq0 )* ((1 - (21/11)*(I_wd/I_orb)) / ((1 - (3*I_wd/I_orb))**3))
     fddot_0PN = (11/3)*(fdot ** 2) / freq0
+    fddot_0PN_v2 = (11/3)*(fdot_pp ** 2) / freq0
     delta_fddot = fddot - fddot_0PN 
+    delta_fddot_v2 = fddot - fddot_0PN_v2
     fd_corr = fdot_pp * (3*I_wd/I_orb)/(1 - (3*I_wd/I_orb)) 
 
     #frequency bin
@@ -86,8 +96,13 @@ def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
     #print("Tides Freq Derivative Correction=", fd_corr * t_obs**2, "Hz")
     #print("Tides Freq Second Derivative =", fddot, "Hz")
     #print("The Tidal Fdd correction is:", delta_fddot * t_obs**3, "Hz")
+    print("Tides Alpha =", freq0 * (t_obs))
+    print("Tides Beta =", fdot * (t_obs)**2)
+    print("Tides Gamma =", fddot * (t_obs)**3)
+    print("Tides Delta:", delta_fddot * (t_obs)**3)
+    print("Tides Delta v2:", delta_fddot_v2 * (t_obs)**3)
     #print("Tides Freq Derivative Dimensionless=", fdot * t_obs**2, "Hz")
-    #print("Tides Freq Second Derivative Dimensionless=", fddot * t_obs**3, "Hz")
+    #print("Tides Freq Second Derivative Dimensionless=", fddot * (t_obs)**3, "Hz")
     #print("-----------------------------------------------")
     #print("Frequency bin:", df)
     #print("Change in Freq bin due to fdot:", dfd)

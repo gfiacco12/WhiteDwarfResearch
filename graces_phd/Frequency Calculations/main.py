@@ -9,7 +9,7 @@ def main(freq0, mass1, mass2, dl, t_obs):
     #INPUTS: Initial frequency (Hz), chirp mass (s), total mass (s)
 
     #frequency calculations
-    fD_1PN, fDD_1PN = Frequency_1PN(freq0, mass1, mass2, dl, t_obs)
+    fD_1PN, fDD_1PN, deltafDD_1PN = Frequency_1PN(freq0, mass1, mass2, dl, t_obs)
     fD_tide, fDD_tide = Frequency_Tides_Masses(freq0, mass1, mass2, t_obs)
     
     #getRootFinder_1PN(freq0, fD_1PN, fDD_1PN, mass1, mass2, 0.6*MSOLAR, 0.6*MSOLAR)
@@ -25,15 +25,17 @@ def main(freq0, mass1, mass2, dl, t_obs):
         alpha = freq0 * t_obs
         beta = fd * (t_obs**2)
         gamma = fdd * (t_obs**3)
+        
         getFisherMatrix(
             t_obs, 
             fx, 
             np.array([amp, 1.5, alpha, beta, gamma]),
             [r'$A$', r'$\phi_{0}$',  r'$\alpha}$', r'$\beta$', r'$\gamma$']
         )
-    
-    fisher_frequencies(fD_1PN, fDD_1PN)
-    fisher_frequencies(fD_tide, fDD_tide)
+        delta = (gamma - (11 / 3)*(beta**2 / alpha))
+        print("delta:", delta)
+    #fisher_frequencies(fD_1PN, fDD_1PN)
+    #fisher_frequencies(fD_tide, fDD_tide)
 
     def fisher_chirpTotal():
         fx = lambda t, p : GWsignal_chirpTotal(t, t_obs, p)
@@ -45,7 +47,7 @@ def main(freq0, mass1, mass2, dl, t_obs):
             np.array([amp, 1.5, freq0, chirpMass, totalMass]),
             [r'$A$', r'$\phi_{0}$',  r'$f0$', r'$MC$', r'$MT$']
         )
-    fisher_chirpTotal()
+    #fisher_chirpTotal()
 
     def fisher_masses():
         fx = lambda t, p : GWsignal_masses(t, t_obs, p)
@@ -55,6 +57,6 @@ def main(freq0, mass1, mass2, dl, t_obs):
             np.array([amp, 1.5, freq0, mass1, mass2]),
             [r'$A$', r'$\phi_{0}$',  r'$f0$', r'$M1$', r'$M2$']
         )
-    fisher_masses()
+    #fisher_masses()
 
-main(10.e-3, 0.7*MSOLAR, 0.6*MSOLAR, 9e-20*KPCSEC, 4*SECSYEAR)
+main(20.e-3, 0.7*MSOLAR, 0.6*MSOLAR, 9e-20*KPCSEC, 4*SECSYEAR)
