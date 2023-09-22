@@ -6,7 +6,7 @@ from const import *
 import scipy as sc
 from scipy import integrate, linalg
 import matplotlib.pyplot as plt
-from HelperCalculations import getParamsWithStep, derivative
+from HelperCalculations import getParamsWithStep, derivative, getChirpMass, getTotalMass
 
 def GWsignal(t, t_obs, params):
     #generates simple sinusoidal signal
@@ -82,17 +82,47 @@ def getFisherMatrix(t_obs, func, params, labels_params = []):
             di = lambda t : derivative(get_fx(t), params, h_params, i)
             dj = lambda t : derivative(get_fx(t), params, h_params, j)
             integrationFunction = lambda t : di(t) * dj(t)
-            value = integrate.quad(integrationFunction, 0, t_obs, limit=200)
+            value = integrate.quad(integrationFunction, 0, t_obs, limit=1000)
             fisher[i, j] = value[0] * 2
             
-    #print(fisher)
     for i in range(len(params)):
         print('Parameter %s: %e'%(labels_params[i], params[i]))
 
     sigma = linalg.inv(fisher)
-    #print(sigma)
 
+    fisher_errors = []
     for i in range(len(params)):
         print('Error in %s: %e'%(labels_params[i], np.sqrt(sigma[i, i])))
+        fisher_errors.append(np.sqrt(sigma[i, i]))
+    return fisher_errors[-1]
 
-    return sigma
+def fisher_frequencies(freq0, fd, fdd, t_obs, amp):
+        fx = lambda t, p : GWsignal(t, t_obs, p)
+        alpha = freq0 * t_obs
+        beta = fd * (t_obs**2)
+        gamma = fdd * (t_obs**3)
+        
+        getFisherMatrix(
+            t_obs, 
+            fx, 
+            np.array([amp, 1.5, alpha, beta, gamma]),
+            [r'$A$', r'$\phi_{0}$',  r'$\alpha}$', r'$\beta$', r'$\gamma$']
+        )
+def fisher_chirpTotal(freq0, mass1, mass2, t_obs, amp):
+        fx = lambda t, p : GWsignal_chirpTotal(t, t_obs, p)
+        chirpMass = getChirpMass(mass1, mass2)
+        totalMass = getTotalMass(mass1, mass2)
+        getFisherMatrix(
+            t_obs, 
+            fx, 
+            np.array([amp, 1.5, freq0, chirpMass, totalMass]),
+            [r'$A$', r'$\phi_{0}$',  r'$f0$', r'$MC$', r'$MT$']
+        )
+def fisher_masses(freq0, mass1, mass2, t_obs, amp):
+    fx = lambda t, p : GWsignal_masses(t, t_obs, p)
+    getFisherMatrix(
+        t_obs, 
+        fx, 
+        np.array([amp, 1.5, freq0, mass1, mass2]),
+        [r'$A$', r'$\phi_{0}$',  r'$f0$', r'$M1$', r'$M2$']
+    )

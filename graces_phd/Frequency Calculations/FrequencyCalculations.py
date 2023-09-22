@@ -8,7 +8,7 @@ from HelperCalculations import *
 import sympy as sp
 
 
-def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
+def Frequency_1PN(freq0, mass1, mass2, t_obs):
 
     chirpMass = getChirpMass(mass1, mass2)
     totalMass = getTotalMass(mass1, mass2)
@@ -28,7 +28,7 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
     delta_fddot_v1 = fddot - (11/3)* (fdot**2 / freq0)
     delta_fddot = fddot - fddot_0PN 
 
-    amp = np.pi**2/3 * chirpMass**(5/3) * freq0**(2/3) / dl
+    #amp = np.pi**2/3 * chirpMass**(5/3) * freq0**(2/3) / dl
 
     #frequency bin
     df = (1/t_obs)
@@ -37,24 +37,13 @@ def Frequency_1PN(freq0, mass1, mass2, dl, t_obs):
 
     # print("1PN CORRECTION TERMS")
     # print("-----------------------------------------------")
-    # print("eta:", eta)
-    # print("0PN point particle fdot:", fdot_pp * t_obs**2, "Hz")
-    # print("1PN Freq Derivative =", fdot, "Hz")
-    print("1PN Alpha =", freq0 * (t_obs))
-    print("1PN Beta =", fdot * (t_obs)**2)
-    print("1PN Gamma =", fddot * (t_obs)**3)
-    print("1PN fdddot:", fdddot_1PN)
-    print("delta fdd (0PN):", delta_fddot * (t_obs)**3)
-    print("1PN delta:", delta_fddot_v1* (t_obs)**3)
-    print("1PN fdddot Unitless:", fdddot_1PN * t_obs**4)
-    # print("Test 1PN fdd corr:", fddot_1PN)
-
-    # print("-----------------------------------------------")
-    # print("Frequency bin:", df)
-    # print("Change in Freq bin due to fdot:", dfd)
-    # print("Change in Freq bin due to fddot:", dfdd)
-    # print("-----------------------------------------------")
-    return fdot, fddot, fdddot_1PN 
+    # print("1PN Alpha =", freq0 * (t_obs))
+    # print("1PN Beta =", fdot * (t_obs)**2)
+    # print("1PN Gamma =", fddot * (t_obs)**3)
+    # print("1PN delta:", delta_fddot_v1* (t_obs)**3)
+    # print("1PN fdddot:", fdddot_1PN)
+    # print("1PN fdddot Unitless:", fdddot_1PN * t_obs**4)
+    return fdot, fddot, delta_fddot_v1 
 
 def Frequency_Tides(freq0, chirpMass, totalMass, t_obs):
     eta = (chirpMass/totalMass)**(5/3)
@@ -73,9 +62,11 @@ def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
     
     I_wd = 8.51e-10 * ((mass1/(0.6*MSOLAR))**(1/3) + (mass2/(0.6*MSOLAR))**(1/3))
     I_orb = chirpMass**(5/3) / ((np.pi*freq0)**(4/3))
-    #1PN freqD and freqDD
+    #Tides freqD and freqDD
     fdot = fdot_pp * (1 + ((3*I_wd/I_orb)/(1 - (3*I_wd/I_orb))) )
     fddot = (11/3)*(fdot_pp**2/freq0 )* ((1 - (21/11)*(I_wd/I_orb)) / ((1 - (3*I_wd/I_orb))**3))
+    fdddot = (19/3) * ((fdot * fddot) / freq0) * (1 + (12/19)*((3*I_wd/I_orb)/(1 - (3*I_wd/I_orb)))*(1 - (7/9)*((fdot_pp**2)/fdot)*((1 - (3*I_wd/I_orb))**(-2)) ) )
+    
     fddot_0PN = (11/3)*(fdot ** 2) / freq0
     fddot_0PN_v2 = (11/3)*(fdot_pp ** 2) / freq0
     delta_fddot = fddot - fddot_0PN 
@@ -89,26 +80,14 @@ def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
 
     #print("TIDAL CORRECTION TERMS")
     #print("-----------------------------------------------")
-    #print("eta:", eta)
-    #print("0PN point particle fdot:", fdot_pp, "Hz")
-    #print("0PN freqDD:", fddot_0PN*t_obs**3, "Hz")
-    #print("Tides Freq Derivative =", fdot, "Hz")
-    #print("Tides Freq Derivative Correction=", fd_corr * t_obs**2, "Hz")
-    #print("Tides Freq Second Derivative =", fddot, "Hz")
-    #print("The Tidal Fdd correction is:", delta_fddot * t_obs**3, "Hz")
-    print("Tides Alpha =", freq0 * (t_obs))
-    print("Tides Beta =", fdot * (t_obs)**2)
-    print("Tides Gamma =", fddot * (t_obs)**3)
-    print("Tides Delta:", delta_fddot * (t_obs)**3)
-    print("Tides Delta v2:", delta_fddot_v2 * (t_obs)**3)
-    #print("Tides Freq Derivative Dimensionless=", fdot * t_obs**2, "Hz")
-    #print("Tides Freq Second Derivative Dimensionless=", fddot * (t_obs)**3, "Hz")
-    #print("-----------------------------------------------")
-    #print("Frequency bin:", df)
-    #print("Change in Freq bin due to fdot:", dfd)
-    #print("Change in Freq bin due to fddot:", dfdd)
-    #print("-----------------------------------------------") 
-    return fdot, fddot
+    # print("Tides Alpha =", freq0 * (t_obs))
+    # print("Tides Beta =", fdot * (t_obs)**2)
+    # print("Tides Gamma =", fddot * (t_obs)**3)
+    # print("Tides Delta:", delta_fddot * (t_obs)**3)
+    # print("Tides fdddot:", fdddot)
+    # print("Tides Kappa:", fdddot * t_obs**4)
+
+    return fdot, fddot, delta_fddot
 
 
 def getFrequency_ChirpTotalMass(freq0, params, results_exact):
