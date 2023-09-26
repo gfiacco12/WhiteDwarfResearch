@@ -8,7 +8,6 @@ from globals import *
 
 # plotting central density vs final mass
 
-
 def plotCentralDensity(masses: "list[number]", rhos: "list[number]"):
     masses.sort()
     rhos.sort()
@@ -163,7 +162,7 @@ def plot2DMassInertiaVelocity(totalMasses, inertia2_correction, totalInertia):
             ref_masses.append(MassN[i])
             ref_inertias.append(inertiaN[i]/10**48)
             ref_inertia0s.append(totalInertia[i]/10**48)
-
+    print(len(ref_inertias))
     #fitting the scaling factors for range of spins from above
     alpha_alt = [1,(19.85*omg)**2, (13.2*omg)**2, (9.9*omg)**2, (7.9*omg)**2, (6.6*omg)**2, 
                   (5.65*omg)**2, (4.95*omg)**2, (4.4*omg)**2, (3.95*omg)**2]
@@ -177,28 +176,43 @@ def plot2DMassInertiaVelocity(totalMasses, inertia2_correction, totalInertia):
     popt2, pcov2 = curve_fit(f1, omega, alpha_alt)
 
     IvsM_omega_fit = f1(ref_masses, popt1[0], popt1[1], popt1[2])
-
-    # print( "Parameters from I(2) vs M fit:")
-    # print( "a =", popt1[0], "+/-", pcov1[0,0]**0.5)
-    # print ("b =", popt1[1], "+/-", pcov1[1,1]**0.5)
-    # print("c =", popt1[2], "+/-", pcov1[2,2]**0.5)
-    # print( "Parameters from alpha_alt fit:")
-    # print( "a =", popt2[0], "+/-", pcov2[0,0]**0.5)
-    # print ("b =", popt2[1], "+/-", pcov2[1,1]**0.5)
-    # print("c =", popt2[2], "+/-", pcov2[2,2]**0.5)
+    
+    print( "Parameters from I(2) vs M fit:")
+    print( "a =", popt1[0], "+/-", pcov1[0,0]**0.5)
+    print ("b =", popt1[1], "+/-", pcov1[1,1]**0.5)
+    print("c =", popt1[2], "+/-", pcov1[2,2]**0.5)
+    print( "Parameters from alpha_alt fit:")
+    print( "a =", popt2[0], "+/-", pcov2[0,0]**0.5)
+    print ("b =", popt2[1], "+/-", pcov2[1,1]**0.5)
+    print("c =", popt2[2], "+/-", pcov2[2,2]**0.5)
 
     plt.figure()
+    I2_for_fixedM = []
+    alpha_polynomial_fit_test = []
     for i in range(len(omega)):  
         alpha_polynomial_fit = f1(omega[i], popt2[0], popt2[1], popt2[2])
         total_fit = IvsM_omega_fit / alpha_polynomial_fit   
+        alpha_polynomial_fit_test.append(alpha_polynomial_fit)
         scale = round(omega[i] / omg, 1) 
+        for j in range(len(total_fit)):
+            if ref_masses[j] == 0.6005131590043628:
+                I2_for_fixedM.append(total_fit[j])
         plt.plot(ref_masses, total_fit, label = "$\Omega$ = %s$\Omega_{max}$"%scale)
-
     plt.title("Total Fit for Moment of Inertia Correction vs Mass as Function of Spin")
     plt.xlabel("Total Mass ($M_{\odot}$)")
     plt.ylabel("Moment of Inertia, $I^{(2)}x10^{48} (gcm^{2})$")
     plt.yscale("log")
     plt.legend()
+    plt.show()
+    
+    plt.figure()
+    plt.plot(omega, I2_for_fixedM)
+    plt.title("I(2) vs Omega")
+    plt.xlabel("Omega")
+    plt.ylabel("Moment of Inertia, $I^{(2)}x10^{48} (gcm^{2})$")
+    plt.legend()
+    plt.xlim(0.003, 0.03)
+    plt.ylim(0, 5)
     plt.show()
 
     plt.figure()
@@ -208,7 +222,6 @@ def plot2DMassInertiaVelocity(totalMasses, inertia2_correction, totalInertia):
         scale = round(omega[i] / omg, 1) 
         totalFit_totalInertia = ref_inertia0s + total_fit
         plt.plot(ref_masses, totalFit_totalInertia, label = "$\Omega$ = %s$\Omega_{max}$"%scale)
-
     plt.title("Total Fit for Total Moment of Inertia vs Mass as Function of Spin")
     plt.xlabel("Total Mass ($M_{\odot}$)")
     plt.ylabel("Total Moment of Inertia, ($I^{(0)}+I^{(2)})x10^{48} (gcm^{2})$")

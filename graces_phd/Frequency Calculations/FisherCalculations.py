@@ -29,7 +29,7 @@ def GWsignal_masses(t, t_obs, params):
     mass1 = params[3]
     mass2 = params[4]
 
-    fD, fDD = Frequency_Tides_Masses(f0, mass1, mass2, t_obs)
+    fD, fDD, deltafDD = Frequency_Tides_Masses(f0, mass1, mass2, t_obs)
     return GWSignal_Tides(t, A, phi0, f0, fD, fDD)
 
 def GWsignal_chirpTotal(t, t_obs, params):
@@ -40,7 +40,7 @@ def GWsignal_chirpTotal(t, t_obs, params):
     chirp = params[3]
     total = params[4]
 
-    fD, fDD = Frequency_Tides(f0, chirp, total, t_obs)
+    fD, fDD, deltafDD = Frequency_Tides(f0, chirp, total, t_obs)
     return GWSignal_Tides(t, A, phi0, f0, fD, fDD)
 
 
@@ -68,7 +68,7 @@ def getFisherMatrix(t_obs, func, params, labels_params = []):
     h_params = []
     for param in params:
         order_of_magnitude = math.floor(math.log10(param))
-        order_of_magnitude -= 6
+        order_of_magnitude -= 7
         h_params.append(10**order_of_magnitude)
 
     #initialize matrix and step size vectors

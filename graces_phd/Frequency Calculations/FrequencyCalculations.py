@@ -23,7 +23,7 @@ def Frequency_1PN(freq0, mass1, mass2, t_obs):
     fddot = fdot_pp * (fdot/freq0) * ((11/3) + (13/3)*((743/1344)-(11*eta/16))*((8*np.pi*totalMass*freq0)**(2/3)))
     fddot_0PN = (11/3)*(fdot_pp**2) / freq0
     fddot_1PN = fddot_0PN*( (3/11)*(13/3)*((743/1344)-(11*eta/16))*(8*np.pi*totalMass*freq0)**(2/3))
-    fdddot_1PN = (19/3) * ((fdot * fddot) / freq0) * ( 1 + (2/19) * (fdot_pp / fdot) * (1 + ((13/3)*(fdot**2 / (freq0 * fddot)))) * (((743/1344)-(11*eta/16))*((8*np.pi*totalMass*freq0)**(2/3))) )
+    fdddot_1PN = (19/3) * ((fdot * fddot) / freq0) #* ( 1 + (2/19) * (fdot_pp / fdot) * (1 + ((13/3)*(fdot**2 / (freq0 * fddot)))) * (((743/1344)-(11*eta/16))*((8*np.pi*totalMass*freq0)**(2/3))) )
 
     delta_fddot_v1 = fddot - (11/3)* (fdot**2 / freq0)
     delta_fddot = fddot - fddot_0PN 
@@ -37,12 +37,12 @@ def Frequency_1PN(freq0, mass1, mass2, t_obs):
 
     # print("1PN CORRECTION TERMS")
     # print("-----------------------------------------------")
-    # print("1PN Alpha =", freq0 * (t_obs))
-    # print("1PN Beta =", fdot * (t_obs)**2)
-    # print("1PN Gamma =", fddot * (t_obs)**3)
-    # print("1PN delta:", delta_fddot_v1* (t_obs)**3)
-    # print("1PN fdddot:", fdddot_1PN)
-    # print("1PN fdddot Unitless:", fdddot_1PN * t_obs**4)
+    print("1PN Alpha =", freq0 * (t_obs))
+    print("1PN Beta =", fdot * (t_obs)**2)
+    print("1PN Gamma =", fddot * (t_obs)**3)
+    print("1PN delta:", delta_fddot_v1* (t_obs)**3)
+    print("1PN fdddot:", fdddot_1PN)
+    print("1PN fdddot Unitless:", fdddot_1PN * t_obs**4)
     return fdot, fddot, delta_fddot_v1 
 
 def Frequency_Tides(freq0, chirpMass, totalMass, t_obs):

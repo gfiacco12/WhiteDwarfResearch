@@ -13,5 +13,7 @@ K = (H ** 2 / (20*ME)) * (3/(np.pi))**(2/3) * (1/2)**(5/3)
 #K = (H ** 2 / (5*ME)) * (3/(8*np.pi))**(2/3)
 
 re = 5e9 + 41123358.4 - (1/2)*(-1682956259) #equatorial radius for 0.6M
-omg = (G*1.18937e33/((5e9)**3))**(1/2)
+#omg = (G*1.18937e33/((5e9)**3))**(1/2)
+omg = np.pi * 9.e-3
+print(omg/np.pi)
 omg_K = (G*1.193e33/((re)**3))**(1/2)  # angular velocity - keplerian

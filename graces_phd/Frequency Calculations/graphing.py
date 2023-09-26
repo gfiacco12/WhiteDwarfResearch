@@ -8,7 +8,7 @@ def makeDeltaPlot(freq0, mass1, mass2, tobs, amp):
 
     #make range of frequencies from 10-20mHz
     freq_range = np.linspace(10.e-3, freq0, 10)
-    fisher_errors = np.linspace(4.e-2, 4.e-2, 10)
+    fisher_errors = np.linspace(2.3*10**-2, 2.3*10**-2, 10)
     delta_tide_list = []
     delta_1PN_list = []
  
