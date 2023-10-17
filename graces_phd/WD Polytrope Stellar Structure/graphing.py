@@ -171,9 +171,11 @@ def plot2DMassInertiaVelocity(totalMasses, inertia2_correction, totalInertia):
     #polynomial fitting function
     def f1(x, a0, a1, a2):
         return a0 + a1/x + a2/np.power(x,2)
+    def f2(x, b0):
+        return (b0 / (np.power(x,2)))
    
     popt1, pcov1 = curve_fit(f1, ref_masses, ref_inertias)
-    popt2, pcov2 = curve_fit(f1, omega, alpha_alt)
+    popt2, pcov2 = curve_fit(f2, omega, alpha_alt)
 
     IvsM_omega_fit = f1(ref_masses, popt1[0], popt1[1], popt1[2])
     
@@ -183,20 +185,20 @@ def plot2DMassInertiaVelocity(totalMasses, inertia2_correction, totalInertia):
     print("c =", popt1[2], "+/-", pcov1[2,2]**0.5)
     print( "Parameters from alpha_alt fit:")
     print( "a =", popt2[0], "+/-", pcov2[0,0]**0.5)
-    print ("b =", popt2[1], "+/-", pcov2[1,1]**0.5)
-    print("c =", popt2[2], "+/-", pcov2[2,2]**0.5)
+    # print ("b =", popt2[1], "+/-", pcov2[1,1]**0.5)
+    # print("c =", popt2[2], "+/-", pcov2[2,2]**0.5)
 
     plt.figure()
     I2_for_fixedM = []
     alpha_polynomial_fit_test = []
     for i in range(len(omega)):  
-        alpha_polynomial_fit = f1(omega[i], popt2[0], popt2[1], popt2[2])
+        alpha_polynomial_fit = f2(omega[i], popt2[0])
         total_fit = IvsM_omega_fit / alpha_polynomial_fit   
         alpha_polynomial_fit_test.append(alpha_polynomial_fit)
         scale = round(omega[i] / omg, 1) 
-        for j in range(len(total_fit)):
-            if ref_masses[j] == 0.6005131590043628:
-                I2_for_fixedM.append(total_fit[j])
+        # for j in range(len(total_fit)):
+        #     if ref_masses[j] == 0.6005131590043628:
+        #         I2_for_fixedM.append(total_fit[j])
         plt.plot(ref_masses, total_fit, label = "$\Omega$ = %s$\Omega_{max}$"%scale)
     plt.title("Total Fit for Moment of Inertia Correction vs Mass as Function of Spin")
     plt.xlabel("Total Mass ($M_{\odot}$)")
@@ -205,19 +207,19 @@ def plot2DMassInertiaVelocity(totalMasses, inertia2_correction, totalInertia):
     plt.legend()
     plt.show()
     
-    plt.figure()
-    plt.plot(omega, I2_for_fixedM)
-    plt.title("I(2) vs Omega")
-    plt.xlabel("Omega")
-    plt.ylabel("Moment of Inertia, $I^{(2)}x10^{48} (gcm^{2})$")
-    plt.legend()
-    plt.xlim(0.003, 0.03)
-    plt.ylim(0, 5)
-    plt.show()
+    # plt.figure()
+    # plt.plot(omega, I2_for_fixedM)
+    # plt.title("I(2) vs Omega")
+    # plt.xlabel("Omega")
+    # plt.ylabel("Moment of Inertia, $I^{(2)}x10^{48} (gcm^{2})$")
+    # plt.legend()
+    # plt.xlim(0.003, 0.03)
+    # plt.ylim(0, 5)
+    # plt.show()
 
     plt.figure()
     for i in range(len(omega)):  
-        alpha_polynomial_fit = f1(omega[i], popt2[0], popt2[1], popt2[2])
+        alpha_polynomial_fit = f2(omega[i], popt2[0])
         total_fit = IvsM_omega_fit / alpha_polynomial_fit   
         scale = round(omega[i] / omg, 1) 
         totalFit_totalInertia = ref_inertia0s + total_fit

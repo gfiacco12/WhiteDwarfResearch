@@ -37,12 +37,12 @@ def Frequency_1PN(freq0, mass1, mass2, t_obs):
 
     # print("1PN CORRECTION TERMS")
     # print("-----------------------------------------------")
-    print("1PN Alpha =", freq0 * (t_obs))
-    print("1PN Beta =", fdot * (t_obs)**2)
-    print("1PN Gamma =", fddot * (t_obs)**3)
-    print("1PN delta:", delta_fddot_v1* (t_obs)**3)
-    print("1PN fdddot:", fdddot_1PN)
-    print("1PN fdddot Unitless:", fdddot_1PN * t_obs**4)
+    # print("1PN Alpha =", freq0 * (t_obs))
+    # print("1PN Beta =", fdot * (t_obs)**2)
+    # print("1PN Gamma =", fddot * (t_obs)**3)
+    # print("1PN delta:", delta_fddot_v1* (t_obs)**3)
+    # print("1PN fdddot:", fdddot_1PN)
+    # print("1PN fdddot Unitless:", fdddot_1PN * t_obs**4)
     return fdot, fddot, delta_fddot_v1 
 
 def Frequency_Tides(freq0, chirpMass, totalMass, t_obs):
@@ -64,7 +64,7 @@ def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
     I_orb = chirpMass**(5/3) / ((np.pi*freq0)**(4/3))
     #Tides freqD and freqDD
     fdot = fdot_pp * (1 + ((3*I_wd/I_orb)/(1 - (3*I_wd/I_orb))) )
-    fddot = (11/3)*(fdot_pp**2/freq0 )* ((1 - (21/11)*(I_wd/I_orb)) / ((1 - (3*I_wd/I_orb))**3))
+    fddot = (11/3)*(fdot_pp**2/freq0 )* (1 + (((26/11)*(3*I_wd/I_orb)) / (1 - (3*I_wd/I_orb))) + ( (19/11) * ((3*I_wd/I_orb) / (1 - (3*I_wd/I_orb)))**2 ))
     fdddot = (19/3) * ((fdot * fddot) / freq0) * (1 + (12/19)*((3*I_wd/I_orb)/(1 - (3*I_wd/I_orb)))*(1 - (7/9)*((fdot_pp**2)/fdot)*((1 - (3*I_wd/I_orb))**(-2)) ) )
     
     fddot_0PN = (11/3)*(fdot ** 2) / freq0
@@ -80,10 +80,12 @@ def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
 
     #print("TIDAL CORRECTION TERMS")
     #print("-----------------------------------------------")
-    # print("Tides Alpha =", freq0 * (t_obs))
-    # print("Tides Beta =", fdot * (t_obs)**2)
-    # print("Tides Gamma =", fddot * (t_obs)**3)
-    # print("Tides Delta:", delta_fddot * (t_obs)**3)
+    print("Tides Alpha =", freq0 * (t_obs))
+    print("Tides Beta =", fdot * (t_obs)**2)
+    print("Tides Gamma =", fddot * (t_obs)**3)
+    print("Tides Delta:", delta_fddot * (t_obs)**3)
+    print("moment of inertia:", I_wd)
+    print("Iorb:", I_orb)
     # print("Tides fdddot:", fdddot)
     # print("Tides Kappa:", fdddot * t_obs**4)
 
@@ -107,7 +109,7 @@ def getFrequency_ChirpTotalMass(freq0, params, results_exact):
     F[1] = fddot - results_exact[1]
     return F
 
-def getFrequency_ComponentMass(freq0, params, results_exact):
+def getFrequency_ComponentMass(freq0, t_obs, params, results_exact):
     mass1, mass2 = params
 
     mass1 = max(mass1, 1.e-30)
@@ -122,14 +124,17 @@ def getFrequency_ComponentMass(freq0, params, results_exact):
 
 
     fdot = fdot_pp * (1 + ((3*I_wd/I_orb)/(1 - (3*I_wd/I_orb))) )
-    fddot = (11/3)*(fdot_pp**2/freq0 )* ((1 - (21/11)*(I_wd/I_orb)) / ((1 - (3*I_wd/I_orb))**3))
+    fddot = (11/3)*(fdot_pp**2/freq0 )* (1 + (((26/11)*(3*I_wd/I_orb)) / (1 - (3*I_wd/I_orb))) + ( (19/11) * ((3*I_wd/I_orb) / (1 - (3*I_wd/I_orb)))**2 ))
 
+    #parameterize frequencies
+    beta = fdot*(t_obs**2)
+    gamma = fddot*(t_obs**3)
     fdot_isNaN = np.isnan(fdot)
     fddot_isNaN = np.isnan(fddot)
 
     F=np.zeros(2)
-    F[0] = fdot - results_exact[0]
-    F[1] = fddot - results_exact[1]
+    F[0] = beta - results_exact[0]
+    F[1] = gamma - results_exact[1]
     return F
 
 def getRootFinder_1PN(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
@@ -170,26 +175,33 @@ def getRootFinder_1PN(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess,
     print(fx(params_exact))
     return
 
-def getRootFinder_tides(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
+def getRootFinder_tides(freq0, fdot, fddot, t_obs, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
     #root finding method for Mt and Mc from the 1PN GW equations
 
     params_guess = [mass1_guess, mass2_guess]
 
     params_exact = [mass1_exact, mass2_exact]
 
-    results_exact = [fdot, fddot]
+    results_exact = [fdot*(t_obs**2), fddot*(t_obs**3)]
 
     #do the iteration
-    fx = lambda p : getFrequency_ComponentMass(freq0, p, results_exact)
+    fx = lambda p : getFrequency_ComponentMass(freq0, t_obs, p, results_exact)
 
     final_guess = optimize.newton(fx, params_guess, tol=1.e-15, maxiter=1000000)
-
+    
     for i in range(len(final_guess)):
         final_guess[i] /= MSOLAR
         params_exact[i] /= MSOLAR
 
-    print("Final Guess:", final_guess)
-    # print(fx(final_guess))
-    print("Real Values:", params_exact )
-    # print(fx(params_exact))
+    final_guess_chirp = getChirpMass(final_guess[0], final_guess[1])
+    final_guess_total = getTotalMass(final_guess[0], final_guess[1])
+
+    print("Final Guess (m1, m2):", final_guess)
+    print("Real Values (m2, m1):", params_exact )
+
+    print("Final Guess Chirp:", final_guess_chirp)
+    print("Real Chirp:", (getChirpMass(mass1_exact, mass2_exact))/MSOLAR)
+
+    print("Final Guess Total:", final_guess_total)
+    print("Real Total:", (getTotalMass(mass1_exact, mass2_exact))/MSOLAR)
     return

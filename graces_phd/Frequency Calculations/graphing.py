@@ -22,11 +22,12 @@ def makeDeltaPlot(freq0, mass1, mass2, tobs, amp):
 
         delta_1PN_list.append(delta_1PN)
         delta_tide_list.append(delta_tide)
+    print(delta_tide_list)
     plt.figure()
     plt.semilogy(freq_range, delta_tide_list, label='Tides')
     plt.semilogy(freq_range, delta_1PN_list, label='1PN')
     plt.semilogy(freq_range, fisher_errors, label="$\Delta\delta$")
-    plt.xlabel("Frequency (mHz)")
+    plt.xlabel("Frequency (Hz)")
     plt.ylabel("$\delta$")
     plt.title("Relationship between $\delta$ and Frequency")
     plt.legend()
