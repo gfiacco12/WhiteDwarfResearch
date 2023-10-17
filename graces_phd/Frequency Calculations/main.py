@@ -27,4 +27,4 @@ def main(freq0, mass1, mass2, dl, t_obs):
     #fisher_masses(freq0, mass1, mass2, t_obs, amp)
 
     #makeDeltaPlot(freq0, mass1, mass2, t_obs, amp)
-main(15.e-3, 0.9*MSOLAR, 0.4*MSOLAR, 7.6e-22*KPCSEC, 4*SECSYEAR)
+main(15.e-3, 0.7*MSOLAR, 0.4*MSOLAR, 7.6e-22*KPCSEC, 4*SECSYEAR)
