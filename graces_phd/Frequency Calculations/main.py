@@ -4,6 +4,7 @@ from FisherCalculations import *
 from HelperCalculations import calculateAmplitude, calculateAmplitude_phys, getChirpMass, getTotalMass
 from const import *
 from graphing import *
+from postprocessing import frequencyPostProcessing
 
 def main(freq0, mass1, mass2, dl, t_obs):
     #Calculates frequency derivatives and other relevant quantities for binary white dwarf in LISA
@@ -12,19 +13,20 @@ def main(freq0, mass1, mass2, dl, t_obs):
     #frequency calculations
     fD_1PN, fDD_1PN, deltafDD_1PN = Frequency_1PN(freq0, mass1, mass2, t_obs)
     fD_tide, fDD_tide, deltafDD_tide = Frequency_Tides_Masses(freq0, mass1, mass2, t_obs)
-
     #getRootFinder_1PN(freq0, fD_1PN, fDD_1PN, mass1, mass2, 0.6*MSOLAR, 0.6*MSOLAR)
-    getRootFinder_tides(freq0, fD_tide, fDD_tide, t_obs, mass1, mass2, 0.6*MSOLAR, 0.6*MSOLAR)
+    #getRootFinder_tides(freq0, fD_tide, fDD_tide, t_obs, mass1, mass2, 0.6*MSOLAR, 0.6*MSOLAR)
 
     # Some amplitude/SNR calculations
     amp = calculateAmplitude(1000, t_obs)
     amp_phys = calculateAmplitude_phys(dl, 0.564*MSOLAR, freq0)
     snr = getSNR(t_obs, amp_phys, 1.5, freq0, fD_1PN, fDD_1PN)
-
+    
     #fisher_frequencies(freq0, fD_1PN, fDD_1PN, t_obs, amp)
     #fisher_frequencies(freq0, fD_tide, fDD_tide, t_obs, amp)
     #fisher_chirpTotal(freq0, mass1, mass2, t_obs, amp)
     #fisher_masses(freq0, mass1, mass2, t_obs, amp)
 
     #makeDeltaPlot(freq0, mass1, mass2, t_obs, amp)
-main(15.e-3, 0.7*MSOLAR, 0.4*MSOLAR, 7.6e-22*KPCSEC, 4*SECSYEAR)
+    #frequencyPostProcessing(freq0, t_obs, mass1, mass2)
+    makeCornerPlots("chirp mass.txt")
+main(20.e-3, 0.7*MSOLAR, 0.6*MSOLAR, 7.6e-22*KPCSEC, 4.0*SECSYEAR)

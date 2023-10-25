@@ -179,14 +179,14 @@ def getRootFinder_1PN(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess,
 
 def getRootFinder_tides(freq0, fdot, fddot, t_obs, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
     #root finding method for Mt and Mc from the tide GW equations
-    beta = fdot*(t_obs**2)
-    delta = (fddot - (11/3)*(fdot**2/freq0))*t_obs**3
+    #beta = fdot*(t_obs**2)
+    #delta = (fddot - (11/3)*(fdot**2/freq0))*t_obs**3
 
     params_guess = [mass1_guess, mass2_guess]
 
     params_exact = [mass1_exact, mass2_exact]
 
-    results_exact = [beta, delta]
+    results_exact = [fdot, fddot]
 
     #do the iteration
     fx = lambda p : getFrequency_ComponentMass(freq0, t_obs, p, results_exact)
@@ -200,12 +200,13 @@ def getRootFinder_tides(freq0, fdot, fddot, t_obs, mass1_exact, mass2_exact, mas
     final_guess_chirp = getChirpMass(final_guess[0], final_guess[1])
     final_guess_total = getTotalMass(final_guess[0], final_guess[1])
 
-    print("Final Guess (m1, m2):", final_guess)
-    print("Real Values (m2, m1):", params_exact )
+    # print("Final Guess (m1, m2):", final_guess)
+    # print("Real Values (m2, m1):", params_exact )
 
-    print("Final Guess Chirp:", final_guess_chirp)
-    print("Real Chirp:", (getChirpMass(mass1_exact, mass2_exact))/MSOLAR)
+    # print("Final Guess Chirp:", final_guess_chirp)
+    # print("Real Chirp:", (getChirpMass(mass1_exact, mass2_exact))/MSOLAR)
 
-    print("Final Guess Total:", final_guess_total)
-    print("Real Total:", (getTotalMass(mass1_exact, mass2_exact))/MSOLAR)
-    return
+    # print("Final Guess Total:", final_guess_total)
+    # print("Real Total:", (getTotalMass(mass1_exact, mass2_exact))/MSOLAR)
+
+    return final_guess_chirp, final_guess_total
