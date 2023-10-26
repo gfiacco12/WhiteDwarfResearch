@@ -34,20 +34,19 @@ def makeDeltaPlot(freq0, mass1, mass2, tobs, amp):
     plt.legend()
     plt.show()
 
-def makeHistogramPlots(data_file, title):
+def makeHistogramPlots(data_file, title, lowlim, uplim):
 
     f = open(data_file, 'r')
-    chirpMass = []
+    massData = []
     for row in f:
         #elements = row.split(' ')
         elements = row.split(' ')
         elements = list(map(lambda e : float(e), elements))
-        chirpMass += elements
-        #chirpMass.append(elements)
-    #print(chirpMass)
+        massData += elements
+
     plt.figure()
-    plt.hist(chirpMass, 100)
-    plt.xlim(1, 2)
+    plt.hist(massData, 20)
+    plt.xlim(lowlim, uplim)
     plt.title(title)
     plt.show()
 
@@ -69,12 +68,12 @@ def makeCornerPlot(chirpmass, totalmass, real_params):
         totalMass += elements
     samples = np.array([chirpMass, totalMass])
 
-    params_true = real_params.T
+    params_true = real_params
     labels = [r"$\mathcal{M}_{c}$", r"$M_{T}$"]
     # create the corner plot figure
     fig = plt.figure(figsize=(10, 7.5))
-    figure = corner.corner(samples.T, fig=fig, bins=50, hist_kwargs={"density": True}, show_titles=True, title_fmt=None,
-                           title_kwargs={"fontsize": 12}, range=[(0.55,0.57), (1,2)], labels=labels, max_n_ticks=3, label_kwargs={"fontsize": 12}, labelpad=0.15,
+    figure = corner.corner(samples.T, fig=fig, bins=25, hist_kwargs={"density": True}, show_titles=True, title_fmt=None,
+                           title_kwargs={"fontsize": 12}, labels=labels, max_n_ticks=3, label_kwargs={"fontsize": 12}, labelpad=0.15,
                            smooth=0.25, levels=[0.682, 0.954], truths=params_true)
     # overplot the true parameters
     corner.overplot_points(figure, params_true[None], marker="s", color='tab:blue', markersize=4)

@@ -81,12 +81,12 @@ def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
 
     #print("TIDAL CORRECTION TERMS")
     #print("-----------------------------------------------")
-    print("Tides Alpha =", freq0 * (t_obs))
-    print("Tides Beta =", fdot * (t_obs)**2)
-    print("Tides Gamma =", fddot * (t_obs)**3)
-    print("Tides Delta:", delta_fddot * (t_obs)**3)
-    print("moment of inertia:", I_wd)
-    print("Iorb:", I_orb)
+    # print("Tides Alpha =", freq0 * (t_obs))
+    # print("Tides Beta =", fdot * (t_obs)**2)
+    # print("Tides Gamma =", fddot * (t_obs)**3)
+    # print("Tides Delta:", delta_fddot * (t_obs)**3)
+    # print("moment of inertia:", I_wd)
+    # print("Iorb:", I_orb)
     # print("Tides fdddot:", fdddot)
     # print("Tides Kappa:", fdddot * t_obs**4)
 
@@ -263,7 +263,7 @@ def getRootFinder_tides_chirpTotalMass(freq0, fdot, fddot, t_obs, chirp_exact, t
         final_guess[i] /= MSOLAR
         params_exact[i] /= MSOLAR
 
-    print("Final Guess (Mc,Mt):", final_guess)
-    print("Real Values (Mc, Mt):", params_exact )
+    #print("Final Guess (Mc,Mt):", final_guess)
+    #print("Real Values (Mc, Mt):", params_exact )
 
     return final_guess
