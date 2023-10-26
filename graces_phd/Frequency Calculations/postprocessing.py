@@ -29,19 +29,20 @@ def frequencyPostProcessing(freq0, t_obs, mass1, mass2):
     #now convert to masses using root finder
     chirpMass = []
     totalMass = []
+    params_true = np.array([getChirpMass(mass1, mass2)/MSOLAR, getTotalMass(mass1, mass2)/MSOLAR])
     for i in range(len(beta)):
-        chirpMass_guess, totalMass_guess = getRootFinder_tides(freq0, beta[i], delta[i], t_obs, mass1, mass2, 0.6*MSOLAR, 0.6*MSOLAR)
+        chirpMass_guess, totalMass_guess = getRootFinder_tides_chirpTotalMass(freq0, beta[i], delta[i], t_obs, params_true[0], params_true[1], 0.5*MSOLAR, 1.2*MSOLAR)
         chirpMass.append(chirpMass_guess)
         totalMass.append(totalMass_guess)
-
+    np.savetxt('chirp & total masses not stripped.txt', np.array([chirpMass, totalMass]))
     #remove nans and negative values
     chirpMass_new = []
     totalMass_new = []
 
-    for mass in range(len(chirpMass)):
-        if not math.isnan(chirpMass[mass]) and totalMass[mass] > 0:
-            chirpMass_new.append(chirpMass[mass])
-            totalMass_new.append(totalMass[mass])          
+    # for mass in range(len(chirpMass)):
+    #     if not math.isnan(chirpMass[mass]) and totalMass[mass] > 0:
+    #         chirpMass_new.append(chirpMass[mass])
+    #         totalMass_new.append(totalMass[mass])          
     
     print("Final Guess Chirp:", np.mean(chirpMass_new))
     realChirp = (getChirpMass(mass1, mass2))/MSOLAR
@@ -51,4 +52,21 @@ def frequencyPostProcessing(freq0, t_obs, mass1, mass2):
     realTotal = (getTotalMass(mass1, mass2))/MSOLAR
     print("Real Total:", realTotal)
     
+def massFiltering(data_file):
     
+    masses = []
+    mass_new = []
+
+    f = open(data_file, 'r')
+
+    for row in f:
+        elements = row.split(' ')
+        elements = list(map(lambda e : float(e), elements))
+        masses += elements
+
+    for mass in range(len(masses)):
+        if masses[mass] > 0:
+            mass_new.append(masses[mass])
+    print(len(masses))
+    print(len(mass_new))
+    np.savetxt("total mass filtered (only neg).txt", mass_new)

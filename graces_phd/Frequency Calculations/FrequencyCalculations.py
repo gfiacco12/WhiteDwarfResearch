@@ -1,3 +1,4 @@
+import math
 from numpy import number
 import numpy as np
 from const import *
@@ -92,7 +93,7 @@ def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
     return fdot, fddot, delta_fddot
 
 
-def getFrequency_ChirpTotalMass(freq0, params, results_exact):
+def getFrequency_ChirpTotalMass_1PN(freq0, params, results_exact):
     chirpMass, totalMass = params
     
     eta = ( chirpMass / totalMass )**(5/3)
@@ -139,6 +140,37 @@ def getFrequency_ComponentMass(freq0, t_obs, params, results_exact):
     F[1] = delta - results_exact[1]
     return F
 
+def getFrequency_McMt_Tides(freq0, t_obs, params, results_exact):
+    chirpMass, totalMass = params
+    eta = ( (chirpMass/MSOLAR) / (totalMass/MSOLAR) )**(5/3)
+    dm = (1-(4*eta))**(1/2)
+
+    if math.isnan(dm):
+        dm = 1.e-30
+    
+    mass1 = totalMass * (1 + dm) / 2
+    mass2 = totalMass * (1 - dm) / 2
+
+    fdot_pp = (96 * (np.pi**(8/3)) * (chirpMass**(5/3)) * (freq0**(11/3))) / 5
+    
+    I_wd = 8.51e-10 * ((mass1/(0.6*MSOLAR))**(1/3) + (mass2/(0.6*MSOLAR))**(1/3))
+    I_orb = chirpMass**(5/3) / ((np.pi*freq0)**(4/3))
+
+
+    fdot = fdot_pp * (1 + ((3*I_wd/I_orb)/(1 - (3*I_wd/I_orb))) )
+    fddot = (11/3)*(fdot_pp**2/freq0 )* (1 + (((26/11)*(3*I_wd/I_orb)) / (1 - (3*I_wd/I_orb))) + ( (19/11) * ((3*I_wd/I_orb) / (1 - (3*I_wd/I_orb)))**2 ))
+
+    #parameterize frequencies
+    alpha = freq0*t_obs
+    beta = fdot*(t_obs**2)
+    gamma = fddot*(t_obs**3)
+    delta = (gamma - (11/3)*((beta**2) / (alpha)))
+
+    F=np.zeros(2)
+    F[0] = beta - results_exact[0]
+    F[1] = delta - results_exact[1]
+    return F
+
 def getRootFinder_1PN(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
     #root finding method for Mt and Mc from the 1PN GW equations
 
@@ -157,13 +189,13 @@ def getRootFinder_1PN(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess,
         jacobian = np.zeros((np.size(p), np.size(p)))
         for i in range(len(p)):
             for j in range(len(p)):
-                fx = lambda params: getFrequency_ChirpTotalMass(freq0, params, results_exact)[i]
+                fx = lambda params: getFrequency_ChirpTotalMass_1PN(freq0, params, results_exact)[i]
                 dF = lambda x, params: derivative(fx, params, step_size, x)
                 jacobian[i, j] = dF(j, p)
         return jacobian
 
     #do the iteration
-    fx = lambda p : getFrequency_ChirpTotalMass(freq0, p, results_exact)
+    fx = lambda p : getFrequency_ChirpTotalMass_1PN(freq0, p, results_exact)
 
     final_guess = optimize.newton(fx, params_guess, tol=1.e-15, maxiter=10000)
 
@@ -177,7 +209,7 @@ def getRootFinder_1PN(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess,
     print(fx(params_exact))
     return
 
-def getRootFinder_tides(freq0, fdot, fddot, t_obs, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
+def getRootFinder_tides_componentMass(freq0, fdot, fddot, t_obs, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
     #root finding method for Mt and Mc from the tide GW equations
     #beta = fdot*(t_obs**2)
     #delta = (fddot - (11/3)*(fdot**2/freq0))*t_obs**3
@@ -210,3 +242,28 @@ def getRootFinder_tides(freq0, fdot, fddot, t_obs, mass1_exact, mass2_exact, mas
     # print("Real Total:", (getTotalMass(mass1_exact, mass2_exact))/MSOLAR)
 
     return final_guess_chirp, final_guess_total
+
+def getRootFinder_tides_chirpTotalMass(freq0, fdot, fddot, t_obs, chirp_exact, total_exact, chirp_guess, total_guess):
+    #root finding method for Mt and Mc from the tide GW equations
+    #beta = fdot*(t_obs**2)
+    #delta = (fddot - (11/3)*(fdot**2/freq0))*t_obs**3
+
+    params_guess = [chirp_guess, total_guess]
+
+    params_exact = [chirp_exact, total_exact]
+
+    results_exact = [fdot, fddot]
+
+    #do the iteration
+    fx = lambda p : getFrequency_McMt_Tides(freq0, t_obs, p, results_exact)
+
+    final_guess = optimize.newton(fx, params_guess, tol=1.e-8, maxiter=1000000)
+    
+    for i in range(len(final_guess)):
+        final_guess[i] /= MSOLAR
+        params_exact[i] /= MSOLAR
+
+    print("Final Guess (Mc,Mt):", final_guess)
+    print("Real Values (Mc, Mt):", params_exact )
+
+    return final_guess

@@ -34,34 +34,53 @@ def makeDeltaPlot(freq0, mass1, mass2, tobs, amp):
     plt.legend()
     plt.show()
 
-def makeCornerPlots(data_file):
+def makeHistogramPlots(data_file, title):
 
     f = open(data_file, 'r')
     chirpMass = []
     for row in f:
+        #elements = row.split(' ')
         elements = row.split(' ')
-        elements = list(map(lambda e : float(e) * 1000, elements))
+        elements = list(map(lambda e : float(e), elements))
         chirpMass += elements
-    print(chirpMass)
+        #chirpMass.append(elements)
+    #print(chirpMass)
     plt.figure()
     plt.hist(chirpMass, 100)
-    plt.title("Mc")
+    plt.xlim(1, 2)
+    plt.title(title)
     plt.show()
 
-    # samples = np.array([chirpMass_new, totalMass_new])
-    # np.savetxt('chirp & total masses.txt', samples)
-    # params_true = np.array([realChirp, realTotal]).T
-    # labels = [r"$\mathcal{M}_{c}$", r"$M_{T}$"]
-    # # create the corner plot figure
-    # fig = plt.figure(figsize=(10, 7.5))
-    # figure = corner.corner(samples.T, fig=fig, bins=25, hist_kwargs={"density": True}, show_titles=True, title_fmt=None,
-    #                        title_kwargs={"fontsize": 12}, labels=labels, max_n_ticks=3, label_kwargs={"fontsize": 12}, labelpad=0.15,
-    #                        smooth=0.25, levels=[0.682, 0.954], truths=params_true)
-    # # overplot the true parameters
-    # corner.overplot_points(figure, params_true[None], marker="s", color='tab:blue', markersize=4)
-    # corner.overplot_lines(figure, params_true, color='tab:blue')
-    # # adjust the figure to fit the box better
-    # fig.subplots_adjust(wspace=0., hspace=0., left=0.05, top=0.95, right=0.99, bottom=0.05)
-    # for ax in figure.get_axes():
-    #     ax.tick_params(which='both', direction='in', bottom=True, top=True, left=True, right=True, labelsize=6)
-    # plt.show()
+def makeCornerPlot(chirpmass, totalmass, real_params):
+    
+    f = open(chirpmass, 'r')
+    g = open(totalmass, 'r')
+    chirpMass = []
+    totalMass = []
+    for row in f:
+        #elements = row.split(' ')
+        elements = row.split(' ')
+        elements = list(map(lambda e : float(e), elements))
+        chirpMass += elements
+    for row in g:
+        #elements = row.split(' ')
+        elements = row.split(' ')
+        elements = list(map(lambda e : float(e), elements))
+        totalMass += elements
+    samples = np.array([chirpMass, totalMass])
+
+    params_true = real_params.T
+    labels = [r"$\mathcal{M}_{c}$", r"$M_{T}$"]
+    # create the corner plot figure
+    fig = plt.figure(figsize=(10, 7.5))
+    figure = corner.corner(samples.T, fig=fig, bins=50, hist_kwargs={"density": True}, show_titles=True, title_fmt=None,
+                           title_kwargs={"fontsize": 12}, range=[(0.55,0.57), (1,2)], labels=labels, max_n_ticks=3, label_kwargs={"fontsize": 12}, labelpad=0.15,
+                           smooth=0.25, levels=[0.682, 0.954], truths=params_true)
+    # overplot the true parameters
+    corner.overplot_points(figure, params_true[None], marker="s", color='tab:blue', markersize=4)
+    corner.overplot_lines(figure, params_true, color='tab:blue')
+    # adjust the figure to fit the box better
+    fig.subplots_adjust(wspace=0., hspace=0., left=0.05, top=0.95, right=0.99, bottom=0.05)
+    for ax in figure.get_axes():
+        ax.tick_params(which='both', direction='in', bottom=True, top=True, left=True, right=True, labelsize=6)
+    plt.show()
