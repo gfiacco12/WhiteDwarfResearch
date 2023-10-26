@@ -26,7 +26,8 @@ def frequencyPostProcessing(freq0, t_obs, mass1, mass2):
                 beta.append(float(row[i]))
             if i == 3:
                 delta.append(float(row[i]))
-    ##### TESTING #####
+
+    ################# TESTING #############################
     test_beta = []
     test_delta = []
     i = 0
@@ -49,7 +50,7 @@ def frequencyPostProcessing(freq0, t_obs, mass1, mass2):
     print(totalMass)
     #np.savetxt('chirp mass (unstripped) 50000.txt', chirpMass)      
     #np.savetxt("total mass (unstripped) 50000.txt", totalMass)
-
+    ###########################################################
     '''
     #remove nans and negatives
     newChirpMass = massFiltering("chirp mass (unstripped) 50000.txt")
