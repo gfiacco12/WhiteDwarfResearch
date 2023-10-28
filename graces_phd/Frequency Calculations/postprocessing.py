@@ -31,7 +31,7 @@ def frequencyPostProcessing(freq0, t_obs, mass1, mass2):
     test_beta = []
     test_delta = []
     i = 0
-    while i < 10:
+    while i < 5:
         element = random.randrange(0, len(beta))
         test_beta.append(beta[element])
         test_delta.append(delta[element])
@@ -43,7 +43,11 @@ def frequencyPostProcessing(freq0, t_obs, mass1, mass2):
     totalMass = []
     params_true = np.array([getChirpMass(mass1, mass2)/MSOLAR, getTotalMass(mass1, mass2)/MSOLAR])
     for i in range(len(test_beta)):
-        chirpMass_guess, totalMass_guess = getRootFinder_tides_chirpTotalMass(freq0, test_beta[i], test_delta[i], t_obs, params_true[0], params_true[1], 0.5*MSOLAR, 1.2*MSOLAR)
+        #starting guess for chirp mass and total mass
+        fdot = test_beta[i]/(t_obs**2)
+        chirp_guess = (fdot * 5 / (96 * (np.pi**(8/3)) * (freq0**(11/3))))**(3./5)
+        total_guess = chirp_guess / (0.24)**(3./5)
+        chirpMass_guess, totalMass_guess = getRootFinder_tides_chirpTotalMass(freq0, test_beta[i], test_delta[i], t_obs, params_true[0], params_true[1], chirp_guess, total_guess)
         chirpMass.append(chirpMass_guess)
         totalMass.append(totalMass_guess)
     print(chirpMass)

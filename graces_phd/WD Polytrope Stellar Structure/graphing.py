@@ -189,6 +189,7 @@ def plot2DMassInertiaVelocity(totalMasses, inertia2_correction, totalInertia):
     # print("c =", popt2[2], "+/-", pcov2[2,2]**0.5)
 
     plt.figure()
+   
     I2_for_fixedM = []
     alpha_polynomial_fit_test = []
     for i in range(len(omega)):  
@@ -200,10 +201,11 @@ def plot2DMassInertiaVelocity(totalMasses, inertia2_correction, totalInertia):
         #     if ref_masses[j] == 0.6005131590043628:
         #         I2_for_fixedM.append(total_fit[j])
         plt.plot(ref_masses, total_fit, label = "$\Omega$ = %s$\Omega_{max}$"%scale)
-    plt.title("Total Fit for Moment of Inertia Correction vs Mass as Function of Spin")
-    plt.xlabel("Total Mass ($M_{\odot}$)")
-    plt.ylabel("Moment of Inertia, $I^{(2)}x10^{48} (gcm^{2})$")
+    plt.title("Total Fit for Moment of Inertia Correction vs Mass as Function of Spin", fontsize=24)
+    plt.xlabel("Total Mass ($M_{\odot}$)", fontsize=24)
+    plt.ylabel("$I^{(2)}x10^{48} (gcm^{2})$", fontsize=24)
     plt.yscale("log")
+    
     plt.legend()
     plt.show()
     
@@ -224,9 +226,9 @@ def plot2DMassInertiaVelocity(totalMasses, inertia2_correction, totalInertia):
         scale = round(omega[i] / omg, 1) 
         totalFit_totalInertia = ref_inertia0s + total_fit
         plt.plot(ref_masses, totalFit_totalInertia, label = "$\Omega$ = %s$\Omega_{max}$"%scale)
-    plt.title("Total Fit for Total Moment of Inertia vs Mass as Function of Spin")
-    plt.xlabel("Total Mass ($M_{\odot}$)")
-    plt.ylabel("Total Moment of Inertia, ($I^{(0)}+I^{(2)})x10^{48} (gcm^{2})$")
+    plt.title("Total Fit for Total Moment of Inertia vs Mass as Function of Spin", fontsize=24)
+    plt.xlabel("Total Mass ($M_{\odot}$)",fontsize=24)
+    plt.ylabel("Total Moment of Inertia, ($I^{(0)}+I^{(2)})x10^{48} (gcm^{2})$",fontsize=24)
     plt.yscale("log")
     plt.legend()
     plt.show()

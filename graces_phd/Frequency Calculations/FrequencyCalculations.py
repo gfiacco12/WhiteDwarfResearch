@@ -167,7 +167,7 @@ def getFrequency_McMt_Tides(freq0, t_obs, params, results_exact):
     delta = (gamma - (11/3)*((beta**2) / (alpha)))
 
     F=np.zeros(2)
-    F[0] = beta - results_exact[0]
+    F[0] = (beta/ results_exact[0]) - 1
     F[1] = delta - results_exact[1]
     return F
 
@@ -243,27 +243,24 @@ def getRootFinder_tides_componentMass(freq0, fdot, fddot, t_obs, mass1_exact, ma
 
     return final_guess_chirp, final_guess_total
 
-def getRootFinder_tides_chirpTotalMass(freq0, fdot, fddot, t_obs, chirp_exact, total_exact, chirp_guess, total_guess):
+def getRootFinder_tides_chirpTotalMass(freq0, beta, delta, t_obs, chirp_exact, total_exact, chirp_guess, total_guess):
     #root finding method for Mt and Mc from the tide GW equations
-    #beta = fdot*(t_obs**2)
-    #delta = (fddot - (11/3)*(fdot**2/freq0))*t_obs**3
-
     params_guess = [chirp_guess, total_guess]
 
     params_exact = [chirp_exact, total_exact]
 
-    results_exact = [fdot, fddot]
+    results_exact = [beta, delta]
 
     #do the iteration
     fx = lambda p : getFrequency_McMt_Tides(freq0, t_obs, p, results_exact)
 
-    final_guess = optimize.newton(fx, params_guess, tol=1.e-8, maxiter=1000000)
+    final_guess = optimize.root(fx, params_guess, tol=1.e-10)
     
-    for i in range(len(final_guess)):
-        final_guess[i] /= MSOLAR
+    for i in range(len(final_guess.x)):
+        final_guess.x[i] /= MSOLAR
         params_exact[i] /= MSOLAR
 
     #print("Final Guess (Mc,Mt):", final_guess)
     #print("Real Values (Mc, Mt):", params_exact )
 
-    return final_guess
+    return final_guess.x

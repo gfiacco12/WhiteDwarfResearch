@@ -74,7 +74,7 @@ def makeCornerPlot(chirpmass, totalmass, real_params):
     fig = plt.figure(figsize=(10, 7.5))
     figure = corner.corner(samples.T, fig=fig, bins=25, hist_kwargs={"density": True}, show_titles=True, title_fmt=None,
                            title_kwargs={"fontsize": 12}, labels=labels, max_n_ticks=3, label_kwargs={"fontsize": 12}, labelpad=0.15,
-                           smooth=0.25, levels=[0.682, 0.954], truths=params_true)
+                           smooth=0.25, title_quantiles=[0.16,0.5,0.84], quantiles= [0.16,0.5,0.84], levels=[0.682, 0.954], truths=params_true)
     # overplot the true parameters
     corner.overplot_points(figure, params_true[None], marker="s", color='tab:blue', markersize=4)
     corner.overplot_lines(figure, params_true, color='tab:blue')
