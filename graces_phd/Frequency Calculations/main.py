@@ -29,6 +29,7 @@ def main(freq0, mass1, mass2, dl, t_obs):
 
     #makeDeltaPlot(freq0, mass1, mass2, t_obs, amp)
 
+    #Post Processing Function Calls
     #frequencyPostProcessing(freq0, t_obs, mass1, mass2)  
     #massFiltering("chirp mass (unstripped) 50000.txt")
     #makeHistogramPlots("total mass stripped 50000.txt", "Mt", 1, 2)
@@ -46,5 +47,5 @@ def main(freq0, mass1, mass2, dl, t_obs):
     #b, d, dd = Frequency_Tides(freq0, 0.5640277240412154*MSOLAR, 1.2943656723814734*MSOLAR, t_obs)
     print(test_beta)
     print(test_delta)
-    
+
 main(20.e-3, 0.7*MSOLAR, 0.6*MSOLAR, 7.6e-22*KPCSEC, 4.0*SECSYEAR)
