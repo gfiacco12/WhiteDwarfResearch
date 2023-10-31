@@ -30,22 +30,19 @@ def main(freq0, mass1, mass2, dl, t_obs):
     #makeDeltaPlot(freq0, mass1, mass2, t_obs, amp)
 
     #Post Processing Function Calls
-    #frequencyPostProcessing(freq0, t_obs, mass1, mass2)  
-    #massFiltering("chirp mass (unstripped) 50000.txt")
-    #makeHistogramPlots("total mass stripped 50000.txt", "Mt", 1, 2)
-    #makeHistogramPlots("chirp mass stripped 50000.txt", "Mc", 0.55, 0.58)
-    #makeCornerPlot("chirp mass stripped 50000.txt", 'total mass stripped 50000.txt', params_true)
+    frequencyPostProcessing(freq0, "mcmc samples (alpha beta delta) 50000 steps.txt", t_obs, mass1, mass2)  
 
     ########## TESTING CHECKS ###############
-    chirpMass_test, totalMass_test = frequencyPostProcessing(freq0, t_obs, mass1, mass2)
-    test_beta = []
-    test_delta = []
-    for i in range(len(chirpMass_test)):
-        b, d, dd = Frequency_Tides(freq0, chirpMass_test[i]*MSOLAR, totalMass_test[i]*MSOLAR, t_obs)
-        test_beta.append(b*(t_obs**2))
-        test_delta.append(dd*(t_obs**3))
-    #b, d, dd = Frequency_Tides(freq0, 0.5640277240412154*MSOLAR, 1.2943656723814734*MSOLAR, t_obs)
-    print(test_beta)
-    print(test_delta)
-
+    # chirpMass_test, totalMass_test = frequencyPostProcessing(freq0, t_obs, mass1, mass2)
+    # test_beta = []
+    # test_delta = []
+    # for i in range(len(chirpMass_test)):
+    #     b, d, dd = Frequency_Tides(freq0, chirpMass_test[i]*MSOLAR, totalMass_test[i]*MSOLAR, t_obs)
+    #     test_beta.append(b*(t_obs**2))
+    #     test_delta.append(dd*(t_obs**3))
+    # b, d, dd = Frequency_Tides(freq0, 0.5640277240412154*MSOLAR, 1.2943656723814734*MSOLAR, t_obs)
+    # print(test_beta)
+    # print(test_delta)
+    #b, d, dd = Frequency_Tides(freq0, 0.565547961720682*MSOLAR, 1.2547124198573094*MSOLAR, t_obs)
+    #print(b,dd)
 main(20.e-3, 0.7*MSOLAR, 0.6*MSOLAR, 7.6e-22*KPCSEC, 4.0*SECSYEAR)

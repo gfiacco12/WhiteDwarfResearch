@@ -9,15 +9,16 @@ import matplotlib.pyplot as plt
 from HelperCalculations import *
 import corner
 from FrequencyCalculations import *
+from graphing import *
 import math
 
 
-def frequencyPostProcessing(freq0, t_obs, mass1, mass2):
+def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
 #start by reading in txt file
     beta = []
     delta = []
 
-    f = open("mcmc samples (alpha beta delta) 50000 steps.txt", 'r')
+    f = open(file_name, 'r')
     
     for row in f:
         row = row.split()
@@ -27,56 +28,47 @@ def frequencyPostProcessing(freq0, t_obs, mass1, mass2):
             if i == 3:
                 delta.append(float(row[i]))
 
-    ################# TESTING #############################
-    test_beta = []
-    test_delta = []
-    i = 0
-    while i < 5:
-        element = random.randrange(0, len(beta))
-        test_beta.append(beta[element])
-        test_delta.append(delta[element])
-        i += 1
-    print(test_beta)
-    print(test_delta)
     #now convert to masses using root finder
     chirpMass = []
     totalMass = []
     params_true = np.array([getChirpMass(mass1, mass2)/MSOLAR, getTotalMass(mass1, mass2)/MSOLAR])
-    for i in range(len(test_beta)):
+    for i in range(len(beta)):
         #starting guess for chirp mass and total mass
-        fdot = test_beta[i]/(t_obs**2)
+        fdot = beta[i]/(t_obs**2)
         chirp_guess = (fdot * 5 / (96 * (np.pi**(8/3)) * (freq0**(11/3))))**(3./5)
         total_guess = chirp_guess / (0.24)**(3./5)
-        chirpMass_guess, totalMass_guess = getRootFinder_tides_chirpTotalMass(freq0, test_beta[i], test_delta[i], t_obs, params_true[0], params_true[1], chirp_guess, total_guess)
-        chirpMass.append(chirpMass_guess)
-        totalMass.append(totalMass_guess)
-    print(chirpMass)
-    print(totalMass)
-    #np.savetxt('chirp mass (unstripped) 50000.txt', chirpMass)      
-    #np.savetxt("total mass (unstripped) 50000.txt", totalMass)
+        final_guess = getRootFinder_tides_chirpTotalMass(freq0, beta[i], delta[i], t_obs, params_true[0], params_true[1], chirp_guess, total_guess)
+        #filter the masses
+        chirp = final_guess.x[0]
+        total = final_guess.x[1]
+        if final_guess.success == True:
+            chirpMass.append(chirp)
+            totalMass.append(total)
     ###########################################################
-    '''
-    #remove nans and negatives
-    newChirpMass = massFiltering("chirp mass (unstripped) 50000.txt")
-    newTotalMass = massFiltering("total mass (unstripped) 50000.txt")
-
-    print("Final Guess Chirp:", np.mean(newChirpMass))
+    print(len(chirpMass))
+    print("Final Guess Chirp:", np.mean(chirpMass))
     realChirp = params_true[0]
     print("Real Chirp:", realChirp)
 
-    print("Final Guess Total:", np.mean(newTotalMass))
+    print(len(totalMass))
+    print("Final Guess Total:", np.mean(totalMass))
     realTotal = params_true[1]
     print("Real Total:", realTotal)
     
     #save new masses to file for plotting
-    np.savetxt("chirp mass stripped 50000.txt", newChirpMass)
-    np.savetxt("total mass stripped 50000.txt", newTotalMass) '''
+    np.savetxt("chirp mass stripped 50000.txt", chirpMass)
+    np.savetxt("total mass stripped 50000.txt", totalMass) 
+
+    makeHistogramPlots(totalMass, "Mt", 1, 2)
+    makeHistogramPlots(chirpMass, "Mc", 0.55, 0.58)
+    makeCornerPlot(chirpMass, totalMass, params_true)
     return chirpMass, totalMass
 
-def massFiltering(data_file):
+def massFiltering(data_file, data):
     
     masses = []
     mass_new = []
+    bad_mass = []
 
     f = open(data_file, 'r')
 
@@ -86,6 +78,9 @@ def massFiltering(data_file):
         masses += elements
 
     for mass in range(len(masses)):
-        if masses[mass] > 0 and not math.isnan(masses[mass]):
+        if data.success == True:
             mass_new.append(masses[mass])
+        else:
+            bad_mass.append(masses[mass])
+    print(bad_mass)
     return mass_new

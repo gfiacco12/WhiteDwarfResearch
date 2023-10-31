@@ -34,38 +34,38 @@ def makeDeltaPlot(freq0, mass1, mass2, tobs, amp):
     plt.legend()
     plt.show()
 
-def makeHistogramPlots(data_file, title, lowlim, uplim):
+def makeHistogramPlots(data, title, lowlim, uplim):
 
-    f = open(data_file, 'r')
-    massData = []
-    for row in f:
-        #elements = row.split(' ')
-        elements = row.split(' ')
-        elements = list(map(lambda e : float(e), elements))
-        massData += elements
-
+    # f = open(data_file, 'r')
+    # massData = []
+    # for row in f:
+    #     #elements = row.split(' ')
+    #     elements = row.split(' ')
+    #     elements = list(map(lambda e : float(e), elements))
+    #     massData += elements
+ 
     plt.figure()
-    plt.hist(massData, 20)
+    plt.hist(data, 20)
     plt.xlim(lowlim, uplim)
     plt.title(title)
     plt.show()
 
-def makeCornerPlot(chirpmass, totalmass, real_params):
+def makeCornerPlot(chirpMass, totalMass, real_params):
     
-    f = open(chirpmass, 'r')
-    g = open(totalmass, 'r')
-    chirpMass = []
-    totalMass = []
-    for row in f:
-        #elements = row.split(' ')
-        elements = row.split(' ')
-        elements = list(map(lambda e : float(e), elements))
-        chirpMass += elements
-    for row in g:
-        #elements = row.split(' ')
-        elements = row.split(' ')
-        elements = list(map(lambda e : float(e), elements))
-        totalMass += elements
+    # f = open(chirpmass, 'r')
+    # g = open(totalmass, 'r')
+    # chirpMass = []
+    # totalMass = []
+    # for row in f:
+    #     #elements = row.split(' ')
+    #     elements = row.split(' ')
+    #     elements = list(map(lambda e : float(e), elements))
+    #     chirpMass += elements
+    # for row in g:
+    #     #elements = row.split(' ')
+    #     elements = row.split(' ')
+    #     elements = list(map(lambda e : float(e), elements))
+    #     totalMass += elements
     samples = np.array([chirpMass, totalMass])
 
     params_true = real_params

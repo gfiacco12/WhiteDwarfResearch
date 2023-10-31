@@ -263,4 +263,4 @@ def getRootFinder_tides_chirpTotalMass(freq0, beta, delta, t_obs, chirp_exact, t
     #print("Final Guess (Mc,Mt):", final_guess)
     #print("Real Values (Mc, Mt):", params_exact )
 
-    return final_guess.x
+    return final_guess
