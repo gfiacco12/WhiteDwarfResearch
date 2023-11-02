@@ -4,7 +4,7 @@ from HelperCalculations import calculateAmplitude, calculateAmplitude_phys, getC
 from const import *
 from graphing import *
 from postprocessing import *
-from priors import resampling
+from priors import resampling, get_Jacobian
 
 def main(freq0, mass1, mass2, dl, t_obs):
     #Calculates frequency derivatives and other relevant quantities for binary white dwarf in LISA
@@ -33,6 +33,7 @@ def main(freq0, mass1, mass2, dl, t_obs):
 
     #prior transfers
     #jac = get_Jacobian([mass1, mass2], freq0, t_obs)
-    resampling([mass1, mass2], freq0, t_obs, 100000)
+    sigmas = [0.017, 0.0403]
+    resampling([beta, delta], freq0, t_obs, 10000, sigmas)
     
 main(20.e-3, 0.7*MSOLAR, 0.6*MSOLAR, 7.6e-22*KPCSEC, 4.0*SECSYEAR)

@@ -64,6 +64,25 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
     makeCornerPlot(chirpMass, totalMass, params_true)
     return chirpMass, totalMass
 
+def betaDeltaM1M2Converter(beta, delta, freq0, t_obs, m1, m2):
+    #now convert to masses using root finder
+    mass1 = []
+    mass2 = []
+    params_true = np.array([m1, m2])
+    for i in range(len(beta)):
+        #starting guess for masses
+        m1_guess = 0.6*MSOLAR
+        m2_guess = 0.6*MSOLAR
+        final_guess = getRootFinder_tides_componentMass(freq0, beta[i], delta[i], t_obs, params_true[0], params_true[1], m1_guess, m2_guess)
+        #filter the masses
+        if final_guess.success == True:
+            mass1.append(final_guess.x[0])
+            mass2.append(final_guess.x[1])
+    print("final m1:", np.mean(mass1))
+    print("final m2:", np.mean(mass2))
+
+    return mass1, mass2
+
 def massFiltering(data_file, data):
     
     masses = []

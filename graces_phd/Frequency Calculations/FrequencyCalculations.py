@@ -213,39 +213,24 @@ def getRootFinder_1PN(freq0, fdot, fddot, mass1_exact, mass2_exact, mass1_guess,
     print(fx(params_exact))
     return
 
-def getRootFinder_tides_componentMass(freq0, fdot, fddot, t_obs, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
-    #root finding method for Mt and Mc from the tide GW equations
-    #beta = fdot*(t_obs**2)
-    #delta = (fddot - (11/3)*(fdot**2/freq0))*t_obs**3
-
+def getRootFinder_tides_componentMass(freq0, beta, delta, t_obs, mass1_exact, mass2_exact, mass1_guess, mass2_guess):
+    #root finding method for M1 and M2 from the tide GW equations
     params_guess = [mass1_guess, mass2_guess]
 
     params_exact = [mass1_exact, mass2_exact]
 
-    results_exact = [fdot, fddot]
+    results_exact = [beta, delta]
 
     #do the iteration
     fx = lambda p : getFrequency_ComponentMass(freq0, t_obs, p, results_exact)
 
-    final_guess = optimize.newton(fx, params_guess, tol=1.e-15, maxiter=1000000)
+    final_guess = optimize.root(fx, params_guess, tol=1.e-10)
     
-    for i in range(len(final_guess)):
-        final_guess[i] /= MSOLAR
+    for i in range(len(final_guess.x)):
+        final_guess.x[i] /= MSOLAR
         params_exact[i] /= MSOLAR
 
-    final_guess_chirp = getChirpMass(final_guess[0], final_guess[1])
-    final_guess_total = getTotalMass(final_guess[0], final_guess[1])
-
-    # print("Final Guess (m1, m2):", final_guess)
-    # print("Real Values (m2, m1):", params_exact )
-
-    # print("Final Guess Chirp:", final_guess_chirp)
-    # print("Real Chirp:", (getChirpMass(mass1_exact, mass2_exact))/MSOLAR)
-
-    # print("Final Guess Total:", final_guess_total)
-    # print("Real Total:", (getTotalMass(mass1_exact, mass2_exact))/MSOLAR)
-
-    return final_guess_chirp, final_guess_total
+    return final_guess
 
 def getRootFinder_tides_chirpTotalMass(freq0, beta, delta, t_obs, chirp_exact, total_exact, chirp_guess, total_guess):
     #root finding method for Mt and Mc from the tide GW equations
@@ -263,8 +248,5 @@ def getRootFinder_tides_chirpTotalMass(freq0, beta, delta, t_obs, chirp_exact, t
     for i in range(len(final_guess.x)):
         final_guess.x[i] /= MSOLAR
         params_exact[i] /= MSOLAR
-
-    #print("Final Guess (Mc,Mt):", final_guess)
-    #print("Real Values (Mc, Mt):", params_exact )
 
     return final_guess
