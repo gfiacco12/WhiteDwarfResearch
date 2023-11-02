@@ -53,7 +53,9 @@ def Frequency_Tides(freq0, chirpMass, totalMass, t_obs):
     mass2 = totalMass * (1 - deltaM) / 2
     return Frequency_Tides_Internal(freq0, chirpMass, mass1, mass2, t_obs)
 
-def Frequency_Tides_Masses(freq0, mass1, mass2, t_obs):
+def Frequency_Tides_Masses(freq0, params, t_obs):
+    mass1 = params[0]
+    mass2 = params[1]
     chirpMass = getChirpMass(mass1, mass2)
     return Frequency_Tides_Internal(freq0, chirpMass, mass1, mass2, t_obs)
     
@@ -74,6 +76,8 @@ def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
     delta_fddot_v2 = fddot - fddot_0PN_v2
     fd_corr = fdot_pp * (3*I_wd/I_orb)/(1 - (3*I_wd/I_orb)) 
 
+    beta = fdot * (t_obs**2)
+    delta = delta_fddot * (t_obs**3)
     #frequency bin
     df = (1/t_obs)
     dfd = (1/t_obs**2)
@@ -90,7 +94,7 @@ def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
     # print("Tides fdddot:", fdddot)
     # print("Tides Kappa:", fdddot * t_obs**4)
 
-    return fdot, fddot, delta_fddot
+    return beta, delta
 
 
 def getFrequency_ChirpTotalMass_1PN(freq0, params, results_exact):

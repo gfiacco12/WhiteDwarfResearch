@@ -4,23 +4,22 @@ from HelperCalculations import calculateAmplitude, calculateAmplitude_phys, getC
 from const import *
 from graphing import *
 from postprocessing import *
+from priors import resampling
 
 def main(freq0, mass1, mass2, dl, t_obs):
     #Calculates frequency derivatives and other relevant quantities for binary white dwarf in LISA
     #INPUTS: Initial frequency (Hz), chirp mass (s), total mass (s)
 
     #frequency calculations
-    fD_1PN, fDD_1PN, deltafDD_1PN = Frequency_1PN(freq0, mass1, mass2, t_obs)
-    fD_tide, fDD_tide, deltafDD_tide = Frequency_Tides_Masses(freq0, mass1, mass2, t_obs)
-
-    params_true = np.array([getChirpMass(mass1, mass2), getTotalMass(mass1, mass2)])
+    fD_1PN, fDD_1PN, delta= Frequency_1PN(freq0, mass1, mass2, t_obs)
+    beta, delta = Frequency_Tides_Masses(freq0, [mass1, mass2], t_obs)
 
     #getRootFinder_tides_chirpTotalMass(freq0, beta, delta, t_obs, params_true[0], params_true[1], 0.3*MSOLAR, 1.4*MSOLAR)
     
     # Some amplitude/SNR calculations
     amp = calculateAmplitude(1000, t_obs)
     amp_phys = calculateAmplitude_phys(dl, 0.564*MSOLAR, freq0)
-    snr = getSNR(t_obs, amp_phys, 1.5, freq0, fD_1PN, fDD_1PN)
+    #snr = getSNR(t_obs, amp_phys, 1.5, freq0, fD_1PN, fDD_1PN)
     
     #fisher_frequencies(freq0, fD_1PN, fDD_1PN, t_obs, amp)
     #fisher_frequencies(freq0, fD_tide, fDD_tide, t_obs, amp)
@@ -30,19 +29,10 @@ def main(freq0, mass1, mass2, dl, t_obs):
     #makeDeltaPlot(freq0, mass1, mass2, t_obs, amp)
 
     #Post Processing Function Calls
-    frequencyPostProcessing(freq0, "mcmc samples (alpha beta delta) 50000 steps.txt", t_obs, mass1, mass2)  
+    #frequencyPostProcessing(freq0, "mcmc samples (alpha beta delta) 150000 steps.txt", t_obs, mass1, mass2)  
 
-    ########## TESTING CHECKS ###############
-    # chirpMass_test, totalMass_test = frequencyPostProcessing(freq0, t_obs, mass1, mass2)
-    # test_beta = []
-    # test_delta = []
-    # for i in range(len(chirpMass_test)):
-    #     b, d, dd = Frequency_Tides(freq0, chirpMass_test[i]*MSOLAR, totalMass_test[i]*MSOLAR, t_obs)
-    #     test_beta.append(b*(t_obs**2))
-    #     test_delta.append(dd*(t_obs**3))
-    # b, d, dd = Frequency_Tides(freq0, 0.5640277240412154*MSOLAR, 1.2943656723814734*MSOLAR, t_obs)
-    # print(test_beta)
-    # print(test_delta)
-    #b, d, dd = Frequency_Tides(freq0, 0.565547961720682*MSOLAR, 1.2547124198573094*MSOLAR, t_obs)
-    #print(b,dd)
+    #prior transfers
+    #jac = get_Jacobian([mass1, mass2], freq0, t_obs)
+    resampling([mass1, mass2], freq0, t_obs, 100000)
+    
 main(20.e-3, 0.7*MSOLAR, 0.6*MSOLAR, 7.6e-22*KPCSEC, 4.0*SECSYEAR)

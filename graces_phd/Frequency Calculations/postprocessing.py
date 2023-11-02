@@ -56,11 +56,11 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
     print("Real Total:", realTotal)
     
     #save new masses to file for plotting
-    np.savetxt("chirp mass stripped 50000.txt", chirpMass)
-    np.savetxt("total mass stripped 50000.txt", totalMass) 
+    np.savetxt("chirp mass stripped 150000.txt", chirpMass)
+    np.savetxt("total mass stripped 150000.txt", totalMass) 
 
-    makeHistogramPlots(totalMass, "Mt", 1, 2)
-    makeHistogramPlots(chirpMass, "Mc", 0.55, 0.58)
+    makeHistogramPlots(totalMass, "Mt (150000 steps)", 1, 2)
+    makeHistogramPlots(chirpMass, "Mc (150000 steps)", 0.55, 0.58)
     makeCornerPlot(chirpMass, totalMass, params_true)
     return chirpMass, totalMass
 

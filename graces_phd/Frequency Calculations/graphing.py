@@ -34,7 +34,7 @@ def makeDeltaPlot(freq0, mass1, mass2, tobs, amp):
     plt.legend()
     plt.show()
 
-def makeHistogramPlots(data, title, lowlim, uplim):
+def makeHistogramPlots(data, title):
 
     # f = open(data_file, 'r')
     # massData = []
@@ -46,7 +46,7 @@ def makeHistogramPlots(data, title, lowlim, uplim):
  
     plt.figure()
     plt.hist(data, 20)
-    plt.xlim(lowlim, uplim)
+    #plt.xlim(lowlim, uplim)
     plt.title(title)
     plt.show()
 
