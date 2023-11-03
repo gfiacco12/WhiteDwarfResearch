@@ -45,43 +45,85 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
             chirpMass.append(chirp)
             totalMass.append(total)
     ###########################################################
-    print(len(chirpMass))
     print("Final Guess Chirp:", np.mean(chirpMass))
     realChirp = params_true[0]
     print("Real Chirp:", realChirp)
 
-    print(len(totalMass))
     print("Final Guess Total:", np.mean(totalMass))
     realTotal = params_true[1]
     print("Real Total:", realTotal)
-    
-    #save new masses to file for plotting
-    np.savetxt("chirp mass stripped 150000.txt", chirpMass)
-    np.savetxt("total mass stripped 150000.txt", totalMass) 
 
-    makeHistogramPlots(totalMass, "Mt (150000 steps)", 1, 2)
-    makeHistogramPlots(chirpMass, "Mc (150000 steps)", 0.55, 0.58)
     makeCornerPlot(chirpMass, totalMass, params_true)
+
+    postProcessMcMt_to_Components(chirpMass, totalMass, mass1, mass2)
+
     return chirpMass, totalMass
+
+
+def postProcessMcMt_to_Components(chirpmass, totalmass, mass1, mass2):
+    convertedM1 = []
+    convertedM2 = []
+    for i in range(len(chirpmass)):
+        m1, m2 = get_comp_mass_Mc_Mt(chirpmass[i], totalmass[i])
+        if m1 < 1.4 and m2 < 1.4:
+            if np.isnan(m1) == False and np.isnan(m2) == False:
+                convertedM1.append(m1)
+                convertedM2.append(m2)
+
+    print("Final M1:", np.average(convertedM1))
+    print("Final M2:", np.average(convertedM2))
+
+    bloop = []
+    for i in range(len(convertedM1)):
+        bloop.append(np.average([convertedM1[i], convertedM2[i]]))
+
+    makeHistogramPlots([x - 0.7 for x in convertedM1], "M1 (150000 steps)", -1, 1)
+    makeHistogramPlots([x - 0.6 for x in convertedM2], "M2 (150000 steps)", -1, 1)
+    makeHistogramPlots(bloop, "bloopity bloop bloop (150000 steps)", 0.6, 1)
+    makeCornerPlot(convertedM1, convertedM2, np.array([mass1/MSOLAR, mass2/MSOLAR]))
+    return
+    
 
 def betaDeltaM1M2Converter(beta, delta, freq0, t_obs, m1, m2):
     #now convert to masses using root finder
-    mass1 = []
-    mass2 = []
-    params_true = np.array([m1, m2])
+    chirpMass = []
+    totalMass = []
+    #params_true = np.array([m1/MSOLAR, m2/MSOLAR])
+    params_true = np.array([getChirpMass(m1, m2)/MSOLAR, getTotalMass(m1, m2)/MSOLAR])
     for i in range(len(beta)):
         #starting guess for masses
         m1_guess = 0.6*MSOLAR
         m2_guess = 0.6*MSOLAR
-        final_guess = getRootFinder_tides_componentMass(freq0, beta[i], delta[i], t_obs, params_true[0], params_true[1], m1_guess, m2_guess)
+        fdot = beta[i]/(t_obs**2)
+        chirp_guess = (fdot * 5 / (96 * (np.pi**(8/3)) * (freq0**(11/3))))**(3./5)
+        total_guess = chirp_guess / (0.24)**(3./5)
+        #final_guess = getRootFinder_tides_componentMass(freq0, beta[i], delta[i], t_obs, params_true[0], params_true[1], m1_guess, m2_guess)
+        final_guess = getRootFinder_tides_chirpTotalMass(freq0, beta[i], delta[i], t_obs, params_true[0], params_true[1], chirp_guess, total_guess)
         #filter the masses
         if final_guess.success == True:
-            mass1.append(final_guess.x[0])
-            mass2.append(final_guess.x[1])
-    print("final m1:", np.mean(mass1))
-    print("final m2:", np.mean(mass2))
+            if np.isnan(final_guess.x[0]) == False and np.isnan(final_guess.x[1]) == False:
+                chirpMass.append(final_guess.x[0])
+                totalMass.append(final_guess.x[1])
+    #now covert to m1, m2
+    makeHistogramPlots(chirpMass, "Mc")
+    makeHistogramPlots(totalMass, "Mt")
+    convertedM1 = []
+    convertedM2 = []
+    for i in range(len(chirpMass)):
+        masses = convertChirpTotal_to_M1M2(chirpMass[i], totalMass[i])
+        if masses[0] < 1.4 and masses[1] < 1.4:
+            convertedM1.append(masses[0])
+            convertedM2.append(masses[1])
 
-    return mass1, mass2
+    # print("Real Mc:", params_true[0])
+    # print("final mc:", np.mean(chirpMass))
+    # print("real Mt:", params_true[1])
+    # print("final mt:", np.mean(totalMass))
+
+    # print("M1:", np.mean(convertedM1))
+    # print("M2:", np.mean(convertedM2))
+
+    return convertedM1, convertedM2
 
 def massFiltering(data_file, data):
     

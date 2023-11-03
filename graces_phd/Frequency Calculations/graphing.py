@@ -50,7 +50,7 @@ def makeHistogramPlots(data, title):
     plt.title(title)
     plt.show()
 
-def makeCornerPlot(chirpMass, totalMass, real_params):
+def makeCornerPlot(chirpMass, totalMass, real_params, weight=None):
     
     # f = open(chirpmass, 'r')
     # g = open(totalmass, 'r')
@@ -69,14 +69,14 @@ def makeCornerPlot(chirpMass, totalMass, real_params):
     samples = np.array([chirpMass, totalMass])
 
     params_true = real_params
-    labels = [r"$\mathcal{M}_{c}$", r"$M_{T}$"]
+    labels = [r"$M_{1}$", r"$M_{2}$"]
     # create the corner plot figure
     fig = plt.figure(figsize=(10, 7.5))
-    figure = corner.corner(samples.T, fig=fig, bins=25, hist_kwargs={"density": True}, show_titles=True, title_fmt=None,
+    figure = corner.corner(samples.T, fig=fig, bins=25, weights=weight, hist_kwargs={"density": True}, show_titles=True, title_fmt=None,
                            title_kwargs={"fontsize": 12}, labels=labels, max_n_ticks=3, label_kwargs={"fontsize": 12}, labelpad=0.15,
                            smooth=0.25, title_quantiles=[0.16,0.5,0.84], quantiles= [0.16,0.5,0.84], levels=[0.682, 0.954], truths=params_true)
     # overplot the true parameters
-    corner.overplot_points(figure, params_true[None], marker="s", color='tab:blue', markersize=4)
+    #corner.overplot_points(figure, params_true[None], marker="s", color='tab:blue', markersize=4)
     corner.overplot_lines(figure, params_true, color='tab:blue')
     # adjust the figure to fit the box better
     fig.subplots_adjust(wspace=0., hspace=0., left=0.05, top=0.95, right=0.99, bottom=0.05)

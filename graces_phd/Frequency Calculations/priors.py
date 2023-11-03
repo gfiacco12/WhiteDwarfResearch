@@ -53,7 +53,7 @@ def resampling(params, freq0, t_obs, nsteps, sigmas):
     high_lims, low_lims = create_prior_model(params, sigma_prior_lim, sigmas)
     #establish jacobian - returns abs value of det(J)
     masses = [0.7*MSOLAR, 0.6*MSOLAR]
-    jacobian = get_Jacobian(masses, freq0, t_obs)
+
     #generate draws and convert to beta, delta
     beta_prior = []
     delta_prior = []
@@ -69,12 +69,22 @@ def resampling(params, freq0, t_obs, nsteps, sigmas):
     #now run these through to get m1, m2
     mass1_prior = []
     mass2_prior = []
+
+    jacobian = []
     mass1, mass2 = betaDeltaM1M2Converter(beta_prior, delta_prior, freq0, t_obs, masses[0], masses[1])
     for i in range(len(mass1)):
-        mass1_prior.append(mass1[i] * jacobian)
-        mass2_prior.append(mass2[i] * jacobian)
+        mass1_prior.append(mass1[i])
+        mass2_prior.append(mass2[i])
+        j = get_Jacobian([mass1[i]*MSOLAR, mass2[i]*MSOLAR], freq0, t_obs)
+        jacobian.append(j)
+
+    makeHistogramPlots(beta_prior, "beta")
+    makeHistogramPlots(delta_prior, "delta")
     makeHistogramPlots(mass1_prior, "m1")
     makeHistogramPlots(mass2_prior, "m2")
+
+    masses_Msun = [0.7, 0.6]
+    makeCornerPlot(mass1_prior, mass2_prior, masses_Msun, weight=jacobian)
 
     return 
 

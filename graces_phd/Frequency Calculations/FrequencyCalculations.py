@@ -140,7 +140,7 @@ def getFrequency_ComponentMass(freq0, t_obs, params, results_exact):
     fddot_isNaN = np.isnan(fddot)
 
     F=np.zeros(2)
-    F[0] = beta - results_exact[0]
+    F[0] = (beta/ results_exact[0]) - 1
     F[1] = delta - results_exact[1]
     return F
 

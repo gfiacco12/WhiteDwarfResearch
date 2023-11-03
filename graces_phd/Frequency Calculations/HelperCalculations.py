@@ -7,6 +7,18 @@ def getChirpMass(mass1, mass2):
 def getTotalMass(mass1, mass2):
     return(mass1 + mass2)
 
+def convertChirpTotal_to_M1M2(chirpmass, totalmass):
+    m1 = (1/2) * (totalmass + np.sqrt(totalmass**2 - (4*chirpmass**(5/3)*totalmass**(1/3))))
+    m2 = (1/2) * (totalmass - np.sqrt(totalmass**(1/3) * (totalmass**(5/3) - 4*chirpmass**(5/3))))
+    return [m1,m2]
+
+def get_comp_mass_Mc_Mt(Mc, Mt):
+    eta = (Mc/Mt)**(5./3.)
+    qq = ((1-2.*eta) - np.sqrt((1-2.*eta)**2. - 4.*eta**2.))/(2.*eta)
+    M1=Mt/(1.+qq)
+    M2=qq*Mt/(1.+qq)
+    return M1, M2 
+
 def calculateAmplitude(SNR, t_obs):
     #calculates approx amplitude from SNR^2 = int( h(t)^2 dt) - time avg over 0 to t_obs
     return(SNR / np.sqrt(t_obs))
