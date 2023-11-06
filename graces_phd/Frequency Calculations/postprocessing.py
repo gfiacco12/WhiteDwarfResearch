@@ -42,8 +42,10 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
         chirp = final_guess.x[0]
         total = final_guess.x[1]
         if final_guess.success == True:
-            chirpMass.append(chirp)
-            totalMass.append(total)
+            eta = (chirp/total)**(5./3.)
+            if eta <= 0.25:
+                chirpMass.append(chirp)
+                totalMass.append(total)
     ###########################################################
     print("Final Guess Chirp:", np.mean(chirpMass))
     realChirp = params_true[0]
@@ -55,8 +57,27 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
 
     makeCornerPlot(chirpMass, totalMass, params_true)
 
-    postProcessMcMt_to_Components(chirpMass, totalMass, mass1, mass2)
+    M1, M2 = postProcessMcMt_to_Components(chirpMass, totalMass, mass1, mass2)
 
+    #re-convert to beta delta
+    beta_v2 = []
+    delta_v2 = []
+    for mass in range(len(M1)):
+        b, d = Frequency_Tides_Masses(freq0, [M1[mass], M2[mass]], t_obs)
+        beta_v2.append(b)
+        delta_v2.append(d)
+    plt.figure()
+    plt.hist(beta, label='original')
+    plt.hist(beta_v2, label='post-processed')
+    plt.title("beta comparison")
+    plt.legend()
+    plt.show
+    plt.figure()
+    plt.hist(delta, label='original')
+    plt.hist(delta_v2, label='post-processed')
+    plt.title("delta comparison")
+    plt.legend()
+    plt.show
     return chirpMass, totalMass
 
 
@@ -73,15 +94,17 @@ def postProcessMcMt_to_Components(chirpmass, totalmass, mass1, mass2):
     print("Final M1:", np.average(convertedM1))
     print("Final M2:", np.average(convertedM2))
 
+    #get true values based on Mc, Mt
+    true_m1, true_m2 = get_comp_mass_Mc_Mt(np.average(chirpmass), np.average(totalmass))
     bloop = []
     for i in range(len(convertedM1)):
         bloop.append(np.average([convertedM1[i], convertedM2[i]]))
 
-    makeHistogramPlots([x - 0.7 for x in convertedM1], "M1 (150000 steps)", -1, 1)
-    makeHistogramPlots([x - 0.6 for x in convertedM2], "M2 (150000 steps)", -1, 1)
-    makeHistogramPlots(bloop, "bloopity bloop bloop (150000 steps)", 0.6, 1)
+    #makeHistogramPlots([x - 0.7 for x in convertedM1], "M1 (150000 steps)", -1, 1)
+    #makeHistogramPlots([x - 0.6 for x in convertedM2], "M2 (150000 steps)", -1, 1)
+    #makeHistogramPlots(bloop, "bloopity bloop bloop (150000 steps)", 0.6, 1)
     makeCornerPlot(convertedM1, convertedM2, np.array([mass1/MSOLAR, mass2/MSOLAR]))
-    return
+    return convertedM1, convertedM2
     
 
 def betaDeltaM1M2Converter(beta, delta, freq0, t_obs, m1, m2):
@@ -102,8 +125,10 @@ def betaDeltaM1M2Converter(beta, delta, freq0, t_obs, m1, m2):
         #filter the masses
         if final_guess.success == True:
             if np.isnan(final_guess.x[0]) == False and np.isnan(final_guess.x[1]) == False:
-                chirpMass.append(final_guess.x[0])
-                totalMass.append(final_guess.x[1])
+                eta = (final_guess.x[0]/final_guess.x[1])**(5./3.)
+                if eta <= 0.25:
+                    chirpMass.append(final_guess.x[0])
+                    totalMass.append(final_guess.x[1])
     #now covert to m1, m2
     makeHistogramPlots(chirpMass, "Mc")
     makeHistogramPlots(totalMass, "Mt")

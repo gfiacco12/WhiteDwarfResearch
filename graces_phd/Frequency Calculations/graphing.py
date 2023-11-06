@@ -34,7 +34,7 @@ def makeDeltaPlot(freq0, mass1, mass2, tobs, amp):
     plt.legend()
     plt.show()
 
-def makeHistogramPlots(data, title):
+def makeHistogramPlots(data, title, lowlim, uplim):
 
     # f = open(data_file, 'r')
     # massData = []
@@ -46,7 +46,7 @@ def makeHistogramPlots(data, title):
  
     plt.figure()
     plt.hist(data, 20)
-    #plt.xlim(lowlim, uplim)
+    plt.xlim(lowlim, uplim)
     plt.title(title)
     plt.show()
 
@@ -76,7 +76,7 @@ def makeCornerPlot(chirpMass, totalMass, real_params, weight=None):
                            title_kwargs={"fontsize": 12}, labels=labels, max_n_ticks=3, label_kwargs={"fontsize": 12}, labelpad=0.15,
                            smooth=0.25, title_quantiles=[0.16,0.5,0.84], quantiles= [0.16,0.5,0.84], levels=[0.682, 0.954], truths=params_true)
     # overplot the true parameters
-    #corner.overplot_points(figure, params_true[None], marker="s", color='tab:blue', markersize=4)
+    corner.overplot_points(figure, params_true[None], marker="s", color='tab:blue', markersize=4)
     corner.overplot_lines(figure, params_true, color='tab:blue')
     # adjust the figure to fit the box better
     fig.subplots_adjust(wspace=0., hspace=0., left=0.05, top=0.95, right=0.99, bottom=0.05)

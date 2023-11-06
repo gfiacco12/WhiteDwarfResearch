@@ -59,7 +59,7 @@ def Frequency_Tides_Masses(freq0, params, t_obs):
     chirpMass = getChirpMass(mass1, mass2)
     return Frequency_Tides_Internal(freq0, chirpMass, mass1, mass2, t_obs)
     
-def Frequency_Tides_Internal(freq0,chirpMass, mass1, mass2, t_obs):
+def Frequency_Tides_Internal(freq0, chirpMass, mass1, mass2, t_obs):
     #0PN point particle freqD
     fdot_pp = 96/5*np.pi**(8/3)*freq0**(11/3)*chirpMass**(5/3)
     
