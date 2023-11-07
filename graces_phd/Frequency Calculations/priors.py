@@ -80,8 +80,8 @@ def resampling(params, freq0, t_obs, nsteps, sigmas):
 
     makeHistogramPlots(beta_prior, "beta")
     makeHistogramPlots(delta_prior, "delta")
-    makeHistogramPlots(mass1_prior, "m1")
-    makeHistogramPlots(mass2_prior, "m2")
+    # makeHistogramPlots(mass1_prior, "m1")
+    # makeHistogramPlots(mass2_prior, "m2")
 
     masses_Msun = [0.7, 0.6]
     makeCornerPlot(mass1_prior, mass2_prior, masses_Msun, weight=jacobian)
