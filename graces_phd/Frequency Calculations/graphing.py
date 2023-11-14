@@ -50,7 +50,7 @@ def makeHistogramPlots(data, title):
     plt.title(title)
     plt.show()
 
-def makeCornerPlot(chirpMass, totalMass, real_params, weight=None):
+def makeCornerPlot(chirpMass, totalMass, real_params, label1, label2, weight=None):
     #beta, delta,
     # f = open(chirpmass, 'r')
     # g = open(totalmass, 'r')
@@ -70,12 +70,12 @@ def makeCornerPlot(chirpMass, totalMass, real_params, weight=None):
     #og_samples = np.array([beta, delta])
 
     params_true = real_params
-    labels = [r"$M_{1}$", r"$M_{2}$"]
+    labels = [label1, label2]
     # create the corner plot figure
     fig = plt.figure(figsize=(10, 7.5))
     figure = corner.corner(samples.T, fig=fig, bins=25, weights=weight, hist_kwargs={"density": True}, show_titles=True, title_fmt=None,
                            title_kwargs={"fontsize": 12}, labels=labels, max_n_ticks=3, label_kwargs={"fontsize": 12}, labelpad=0.15,
-                           smooth=0.25, levels=[0.682, 0.954], truths=params_true, range=[(0,1.4), (0,1.4)])
+                           smooth=0.25, levels=[0.682, 0.954], truths=params_true)
     # figure = corner.corner(samples.T, fig=figure, bins=25, weights=weight, hist_kwargs={"density": True}, show_titles=True, title_fmt=None,
     #                        title_kwargs={"fontsize": 12}, labels=labels, max_n_ticks=3, label_kwargs={"fontsize": 12}, labelpad=0.15,
     #                        smooth=0.25, color="blue", levels=[0.682, 0.954], truths=params_true)

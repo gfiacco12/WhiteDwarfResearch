@@ -54,6 +54,9 @@ def resampling(params, freq0, t_obs, nsteps, sigmas):
     #establish jacobian - returns abs value of det(J)
     masses = [0.7*MSOLAR, 0.6*MSOLAR]
 
+    #determine m1, m2 for high and low limits
+    
+
     #generate draws and convert to beta, delta
     beta_prior = []
     delta_prior = []
@@ -80,11 +83,9 @@ def resampling(params, freq0, t_obs, nsteps, sigmas):
 
     makeHistogramPlots(beta_prior, "beta")
     makeHistogramPlots(delta_prior, "delta")
-    # makeHistogramPlots(mass1_prior, "m1")
-    # makeHistogramPlots(mass2_prior, "m2")
 
     masses_Msun = [0.7, 0.6]
-    makeCornerPlot(mass1_prior, mass2_prior, masses_Msun, weight=jacobian)
+    makeCornerPlot(mass1_prior, mass2_prior, masses_Msun, r"$M_{1}$",r"$M_{2}$", weight=jacobian)
 
     return 
 
