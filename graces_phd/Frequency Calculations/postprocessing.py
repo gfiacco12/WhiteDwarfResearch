@@ -143,13 +143,16 @@ def betaDeltaM1M2Converter(beta, delta, freq0, t_obs, m1, m2):
     #now covert to m1, m2
     convertedM1 = []
     convertedM2 = []
+    massratio = []
     for i in range(len(chirpMass)):
-        masses = convertChirpTotal_to_M1M2(chirpMass[i], totalMass[i])
-        if masses[0] < 1.4 and masses[1] < 1.4:
+        masses = get_comp_mass_Mc_Mt(chirpMass[i], totalMass[i])
+        if masses[0] < 1.4 and masses[1] <= 1:
             convertedM1.append(masses[0])
             convertedM2.append(masses[1])
+            massratio.append(masses[2])
     print(len(convertedM1))
-    return convertedM1, convertedM2
+
+    return convertedM1, convertedM2, massratio
 
 def massFiltering(data_file, data):
     

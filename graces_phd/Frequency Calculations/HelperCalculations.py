@@ -17,7 +17,8 @@ def get_comp_mass_Mc_Mt(Mc, Mt):
     qq = ((1-2.*eta) - np.sqrt((1-2.*eta)**2. - 4.*eta**2.))/(2.*eta)
     M1=Mt/(1.+qq)
     M2=qq*Mt/(1.+qq)
-    return M1, M2 
+    q = M2 / M1
+    return M1, M2, q 
 
 def calculateAmplitude(SNR, t_obs):
     #calculates approx amplitude from SNR^2 = int( h(t)^2 dt) - time avg over 0 to t_obs

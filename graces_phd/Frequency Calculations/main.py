@@ -4,7 +4,7 @@ from HelperCalculations import calculateAmplitude, calculateAmplitude_phys, getC
 from const import *
 from graphing import *
 from postprocessing import *
-from priors import resampling, get_Jacobian
+from priors import resampling, drawSamples_M1M2
 
 def main(freq0, mass1, mass2, dl, t_obs):
     #Calculates frequency derivatives and other relevant quantities for binary white dwarf in LISA
@@ -13,7 +13,7 @@ def main(freq0, mass1, mass2, dl, t_obs):
     #frequency calculations
     fD_1PN, fDD_1PN, delta= Frequency_1PN(freq0, mass1, mass2, t_obs)
     beta, delta = Frequency_Tides_Masses(freq0, [mass1, mass2], t_obs)
-
+    print(beta, delta)
     #getRootFinder_tides_chirpTotalMass(freq0, beta, delta, t_obs, params_true[0], params_true[1], 0.3*MSOLAR, 1.4*MSOLAR)
     # Some amplitude/SNR calculations
     amp = calculateAmplitude(1000, t_obs)
@@ -31,6 +31,7 @@ def main(freq0, mass1, mass2, dl, t_obs):
 
     #prior transfers
     #jac = get_Jacobian([mass1, mass2], freq0, t_obs)
+    #drawSamples_M1M2(10000, [0.3,0.3], [1.4,1.4], [mass1, mass2], freq0)
     sigmas = [0.017, 0.0403]
     resampling([beta, delta], freq0, t_obs, 500000, sigmas)
     

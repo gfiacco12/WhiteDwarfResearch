@@ -38,7 +38,7 @@ def get_Jacobian(p, freq0, t_obs):
     jacobian = np.zeros((np.size(p), np.size(p)))
     for i in range(len(p)):
         for j in range(len(p)):
-            fx = lambda params: Frequency_Tides_Masses(freq0, params, t_obs)[i]
+            fx = lambda params: Frequency_Tides_MassRatio(freq0, params, t_obs)[i]
             dF = lambda x, params: derivative(fx, params, step_size, x)
             jacobian[i, j] = dF(j, p)
     #invert this matrix, need d(m1m2)/d(b,d)
@@ -49,14 +49,15 @@ def get_Jacobian(p, freq0, t_obs):
 
 def resampling(params, freq0, t_obs, nsteps, sigmas):
     #establish prior:
-    sigma_prior_lim=5
-    high_lims, low_lims = create_prior_model(params, sigma_prior_lim, sigmas)
-    #establish jacobian - returns abs value of det(J)
+    sigma_prior_lim=2
+    #high_lims, low_lims = create_prior_model(params, sigma_prior_lim, sigmas)
     masses = [0.7*MSOLAR, 0.6*MSOLAR]
 
     #determine m1, m2 for high and low limits
-    
-
+    #beta_low, delta_low = Frequency_Tides_Masses(freq0, [0.4*MSOLAR, 0.4*MSOLAR], t_obs)
+    #beta_up, delta_up = Frequency_Tides_Masses(freq0, [1.4*MSOLAR, 1.4*MSOLAR], t_obs)
+    high_lims = [4000., 3.2]
+    low_lims = [1000., 0.8]
     #generate draws and convert to beta, delta
     beta_prior = []
     delta_prior = []
@@ -72,20 +73,44 @@ def resampling(params, freq0, t_obs, nsteps, sigmas):
     #now run these through to get m1, m2
     mass1_prior = []
     mass2_prior = []
+    massratio_prior = []
 
     jacobian = []
-    mass1, mass2 = betaDeltaM1M2Converter(beta_prior, delta_prior, freq0, t_obs, masses[0], masses[1])
+    mass1, mass2, q = betaDeltaM1M2Converter(beta_prior, delta_prior, freq0, t_obs, masses[0], masses[1])
     for i in range(len(mass1)):
-        mass1_prior.append(mass1[i])
-        mass2_prior.append(mass2[i])
-        j = get_Jacobian([mass1[i]*MSOLAR, mass2[i]*MSOLAR], freq0, t_obs)
-        jacobian.append(j)
+        if mass1[i] >= 0. and mass1[i] <= 1.4:
+            if q[i] >= 0.:
+                mass1_prior.append(mass1[i])
+                mass2_prior.append(mass2[i])
+                massratio_prior.append(q[i])
+                j = get_Jacobian([mass1[i]*MSOLAR, q[i]], freq0, t_obs)
+                jacobian.append(j)
+    print(len(mass1_prior))
+    makeCornerPlot([beta_prior, delta_prior], [np.average(beta_prior), np.average(delta_prior)], labels=["beta", "delta"])
 
-    makeHistogramPlots(beta_prior, "beta")
-    makeHistogramPlots(delta_prior, "delta")
-
-    masses_Msun = [0.7, 0.6]
-    makeCornerPlot(mass1_prior, mass2_prior, masses_Msun, r"$M_{1}$",r"$M_{2}$", weight=jacobian)
+    masses_Msun = [0.7, 0.857143]
+    makeCornerPlot([mass1_prior, massratio_prior], masses_Msun, weight=jacobian, labels=[r"$M_{1}$", "q"])
 
     return 
+
+def drawSamples_M1M2(nsteps, low_lims, high_lims, params, freq0):
+    m1_prior = []
+    m2_prior = []
+    i=0
+    while i < nsteps:
+        prior = prior_draw(high_lims, low_lims, params)
+        m1_prior.append(prior[0])
+        m2_prior.append(prior[1])
+        i += 1
+    #get beta, delta
+    beta_prior = []
+    delta_prior = []
+    for j in range(len(m1_prior)):
+        beta, delta = Frequency_Tides_Masses(freq0, [m1_prior[j]*MSOLAR, m2_prior[j]*MSOLAR], t_obs=4*SECSYEAR)
+        beta_prior.append(beta)
+        delta_prior.append(delta)
+    makeCornerPlot([beta_prior, delta_prior, m1_prior, m2_prior], [3600, 1.38, 0.485, 0.485], labels=["beta", "delta", "M1", "M2"])
+    return
+
+
 
