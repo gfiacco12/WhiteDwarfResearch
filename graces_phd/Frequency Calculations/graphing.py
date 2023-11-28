@@ -87,3 +87,42 @@ def makeCornerPlot(samples, real_params, weight=None, labels=None):
     for ax in figure.get_axes():
         ax.tick_params(which='both', direction='in', bottom=True, top=True, left=True, right=True, labelsize=6)
     plt.show()
+
+    
+def makeWaveformPlot(freq_file, time_file):
+    #the inputs are text files
+    times = []
+    freq_model = []
+
+    f = open(time_file,'r') 
+    freqfile = open(freq_file, 'r')
+    for row in f: 
+        row = row.split('\n') 
+        times.append(float(row[0]))  
+    for row in freqfile: 
+        row = row.split('\n') 
+        freq_model.append(float(row[0])) 
+
+    fig, ax1 = plt.subplots(figsize=(8, 8))
+    ax1.plot(times, freq_model, label="Freq model", color="blue")
+    plt.title("AET_FTs vs TTs for Models")
+    plt.xlabel("TTs")
+    plt.legend()
+    ax1.set_ylabel("Freq Model AET_FTs")
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    plt.show()
+    return
+
+def plotSensitivityCurveLISA():
+    import PhenomA as pa
+    import LISA as li
+
+    # create LISA object
+    lisa = li.LISA() 
+
+    # Plot LISA's sensitivity curve
+    f  = np.logspace(np.log10(1.0e-5), np.log10(1.0e0), 1000)
+    Sn = lisa.Sn(f)
+    li.PlotSensitivityCurve(f, Sn)
+    return
+

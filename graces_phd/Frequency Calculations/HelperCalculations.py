@@ -10,7 +10,8 @@ def getTotalMass(mass1, mass2):
 def convertChirpTotal_to_M1M2(chirpmass, totalmass):
     m1 = (1/2) * (totalmass + np.sqrt(totalmass**2 - (4*chirpmass**(5/3)*totalmass**(1/3))))
     m2 = (1/2) * (totalmass - np.sqrt(totalmass**(1/3) * (totalmass**(5/3) - 4*chirpmass**(5/3))))
-    return [m1,m2]
+    q = m2 / m1
+    return [m1,m2,q]
 
 def get_comp_mass_Mc_Mt(Mc, Mt):
     eta = (Mc/Mt)**(5./3.)
@@ -54,3 +55,55 @@ def getParamsWithStep(params, target, step, stepUp = True):
         newParams[target] = params[target] - step
 
     return newParams
+
+import matplotlib.pyplot as plt
+from scipy.fft import fft, fftfreq
+
+def dataFFT(freq_file, time_file, duration, samplerate):
+    #import signal file
+    signal = []
+    times = []
+    f = open(time_file,'r') 
+    freqfile = open(freq_file, 'r')
+    for row in f: 
+        row = row.split('\n') 
+        times.append(float(row[0]))  
+    for row in freqfile: 
+        row = row.split('\n') 
+        signal.append(float(row[0]))
+
+    signal_cut = []
+    times_cut = []
+    for sig in range(len(signal)):
+        if times[sig] <= duration:
+            signal_cut.append(signal[sig])
+            times_cut.append(times[sig])
+
+    N = len(signal_cut)
+    h_f = fft(signal_cut)
+    f_t = fftfreq(N, 1/samplerate)
+
+    import PhenomA as pa
+    import LISA as li
+    # create LISA object
+    lisa = li.LISA() 
+
+    # Plot LISA's sensitivity curve
+    f  = np.logspace(np.log10(1.0e-5), np.log10(1.0e0), N)
+    Sn = lisa.Sn(f)
+
+    plt.figure()
+    plt.plot(times_cut, signal_cut)
+    plt.show()
+    plt.figure()
+    plt.loglog(f, np.abs(h_f))
+    plt.loglog(f, np.sqrt(f*Sn))
+    plt.xlabel("Freq (Hz)")
+    plt.ylabel("h(f)")
+    plt.xlim(1.0e-5, 1.0e0)
+    plt.ylim(3.0e-22, 1.0e-15)
+    plt.show()
+
+    return
+    
+

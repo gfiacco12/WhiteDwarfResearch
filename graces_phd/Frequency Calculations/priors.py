@@ -1,7 +1,7 @@
 import numpy as np
 from const import *
 from graphing import * 
-from postprocessing import betaDeltaM1M2Converter
+from postprocessing import betaDeltaM1M2Converter, getDataFromFile
 
 def create_prior_model(params, sigma_prior_lim, sigmas):
     """get the limits for the prior model, given fiducial starting parameters,
@@ -47,17 +47,17 @@ def get_Jacobian(p, freq0, t_obs):
     detjac = np.abs(np.linalg.det(inverseJac))
     return detjac
 
-def resampling(params, freq0, t_obs, nsteps, sigmas):
+def resampling_test(params, freq0, t_obs, nsteps, sigmas):
     #establish prior:
-    sigma_prior_lim=2
+    sigma_prior_lim=1.
     #high_lims, low_lims = create_prior_model(params, sigma_prior_lim, sigmas)
     masses = [0.7*MSOLAR, 0.6*MSOLAR]
 
     #determine m1, m2 for high and low limits
-    #beta_low, delta_low = Frequency_Tides_Masses(freq0, [0.4*MSOLAR, 0.4*MSOLAR], t_obs)
-    #beta_up, delta_up = Frequency_Tides_Masses(freq0, [1.4*MSOLAR, 1.4*MSOLAR], t_obs)
-    high_lims = [4000., 3.2]
-    low_lims = [1000., 0.8]
+    high_lims = [3200., 3.0]
+    low_lims = [2000., 0.8]
+    print("High limits", high_lims)
+    print("low limits:", low_lims)
     #generate draws and convert to beta, delta
     beta_prior = []
     delta_prior = []
@@ -78,8 +78,8 @@ def resampling(params, freq0, t_obs, nsteps, sigmas):
     jacobian = []
     mass1, mass2, q = betaDeltaM1M2Converter(beta_prior, delta_prior, freq0, t_obs, masses[0], masses[1])
     for i in range(len(mass1)):
-        if mass1[i] >= 0. and mass1[i] <= 1.4:
-            if q[i] >= 0.:
+        if mass1[i] >= 0.3 and mass1[i] <= 1.4:
+            if q[i] >= 0. and q[i]<= 1.0:
                 mass1_prior.append(mass1[i])
                 mass2_prior.append(mass2[i])
                 massratio_prior.append(q[i])
@@ -112,5 +112,26 @@ def drawSamples_M1M2(nsteps, low_lims, high_lims, params, freq0):
     makeCornerPlot([beta_prior, delta_prior, m1_prior, m2_prior], [3600, 1.38, 0.485, 0.485], labels=["beta", "delta", "M1", "M2"])
     return
 
+def resampling(params, freq0, t_obs, true_values):
+    #now run these through to get m1, m2
+    beta, delta  = getDataFromFile("mcmc samples (alpha beta delta) 150000 steps.txt")
 
+    mass1_prior = []
+    mass2_prior = []
+    massratio_prior = []
+    jacobian = []
+    mass1, mass2, q = betaDeltaM1M2Converter(beta, delta, freq0, t_obs, true_values[0], true_values[1])
+    for i in range(len(mass1)):
+        if mass1[i] >= 0.1 and mass1[i] <= 1.4:
+            #if mass2[i] >= 0.1 and mass2[i] <= mass1[i]:
+            if q[i] <= 1. and q[i] >= 0.:
+                mass1_prior.append(mass1[i])
+                mass2_prior.append(mass2[i])
+                massratio_prior.append(q[i])
+                j = get_Jacobian([mass1[i]*MSOLAR, q[i]], freq0, t_obs)
+                jacobian.append(j)
 
+    makeCornerPlot([beta, delta], [np.average(beta), np.average(delta)], labels=["beta", "delta"])
+    masses_Msun = [0.7, 0.857143]
+    makeCornerPlot([mass1_prior, massratio_prior], masses_Msun, weight=jacobian, labels=[r"$M_{1}$", "q"])
+    return

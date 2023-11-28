@@ -1,7 +1,8 @@
 import numpy as np
 import math
+from const import MSOLAR
 from priors import prior_draw
-from HelperCalculations import derivative
+from HelperCalculations import derivative, getChirpMass
 from graphing import makeCornerPlot
 
 #test case - resample priors for A and Phi
@@ -74,4 +75,38 @@ def testParameterization(params):
     phi = np.arctan(y / x)
     return(A, phi)
 
-testResampling(params, 100000)
+#testResampling(params, 100000)
+
+def test_mass_resampling(params, nsteps):
+    m1_prior = []
+    q_prior = []
+    high_lims_mass = [1.4, 1.0]
+    low_lims_mass = [0.3, 0.]
+    i=0
+    while i < nsteps:
+        prior = prior_draw(high_lims_mass, low_lims_mass, params)
+        m1_prior.append(prior[0])
+        q_prior.append(prior[1])
+        i += 1
+    #apply mass cuts
+    m1 = []
+    q = []
+    true_chirp = getChirpMass(0.7, 0.6)
+    print(true_chirp)
+    print((0.857143**(3/5)*0.7) /(1 + 0.857143)**(1/5) )
+    for j in range(len(m1_prior)):      
+        m2 = q_prior[j] * m1_prior[j]
+        mc = (m1_prior[j] * q_prior[j]**(3./5.)) / (1 + q_prior[j])**(1./5.)
+        if m2 >= 0.3 and m2 <= m1_prior[j]:
+            if mc <= (true_chirp + 0.005*true_chirp) and mc >= (true_chirp - 0.005*true_chirp):
+                m1.append(m1_prior[j])
+                q.append(q_prior[j])
+
+    masses_Msun = [0.7, 0.857143]
+    makeCornerPlot([m1, q], masses_Msun, labels=[r"$M_{1}$", "q"])
+    return
+mass_param = [0.7, 0.857143]
+#test_mass_resampling(mass_param, 500000)
+
+print(getChirpMass(0.3, 0.3))
+print(getChirpMass(1.4, 1.4))

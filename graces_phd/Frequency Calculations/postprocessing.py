@@ -12,6 +12,20 @@ from FrequencyCalculations import *
 from graphing import *
 import math
 
+def getDataFromFile(file_name):
+    beta = []
+    delta = []
+
+    f = open(file_name, 'r')
+    
+    for row in f:
+        row = row.split()
+        for i in range(len(row)): 
+            if i == 2:
+                beta.append(float(row[i]))
+            if i == 3:
+                delta.append(float(row[i]))
+    return beta, delta
 
 def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
 #start by reading in txt file
@@ -114,30 +128,18 @@ def betaDeltaM1M2Converter(beta, delta, freq0, t_obs, m1, m2):
     #now convert to masses using root finder
     chirpMass = []
     totalMass = []
-    # convertedM1 = []
-    # convertedM2 = []
-    #params_true = np.array([m1/MSOLAR, m2/MSOLAR])
     params_true = np.array([getChirpMass(m1, m2)/MSOLAR, getTotalMass(m1, m2)/MSOLAR])
     for i in range(len(beta)):
         #starting guess for masses
-        m1_guess = 0.6*MSOLAR
-        m2_guess = 0.6*MSOLAR
         fdot = beta[i]/(t_obs**2)
         chirp_guess = (fdot * 5 / (96 * (np.pi**(8/3)) * (freq0**(11/3))))**(3./5)
         total_guess = chirp_guess / (0.24)**(3./5)
-        #final_guess = getRootFinder_tides_componentMass(freq0, beta[i], delta[i], t_obs, params_true[0], params_true[1], m1_guess, m2_guess)
         final_guess = getRootFinder_tides_chirpTotalMass(freq0, beta[i], delta[i], t_obs, params_true[0], params_true[1], chirp_guess, total_guess)
         #filter the masses
         if final_guess.success == True:
             if np.isnan(final_guess.x[0]) == False and np.isnan(final_guess.x[1]) == False:
                 eta = (final_guess.x[0]/final_guess.x[1])**(5./3.)
-                # m1 = final_guess.x[0]
-                # m2 = final_guess.x[1]
-                # eta = (m1*m2) / (m1 + m2)**2
                 if eta <= 0.25:
-                    # if m1 < 1.4 and m2 < 1.4:
-                    #     convertedM1.append(m1)
-                    #     convertedM2.append(m2)
                     chirpMass.append(final_guess.x[0])
                     totalMass.append(final_guess.x[1])
     #now covert to m1, m2
@@ -145,8 +147,8 @@ def betaDeltaM1M2Converter(beta, delta, freq0, t_obs, m1, m2):
     convertedM2 = []
     massratio = []
     for i in range(len(chirpMass)):
-        masses = get_comp_mass_Mc_Mt(chirpMass[i], totalMass[i])
-        if masses[0] < 1.4 and masses[1] <= 1:
+        masses = convertChirpTotal_to_M1M2(chirpMass[i], totalMass[i])
+        if masses[0] < 1.4 and masses[1] <= 1.4:
             convertedM1.append(masses[0])
             convertedM2.append(masses[1])
             massratio.append(masses[2])
