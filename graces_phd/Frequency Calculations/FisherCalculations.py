@@ -68,7 +68,7 @@ def getFisherMatrix(t_obs, func, params, labels_params = []):
     h_params = []
     for param in params:
         order_of_magnitude = math.floor(math.log10(param))
-        order_of_magnitude -= 7
+        order_of_magnitude -= 6
         h_params.append(10**order_of_magnitude)
 
     #initialize matrix and step size vectors

@@ -51,22 +51,6 @@ def makeHistogramPlots(data, title):
     plt.show()
 
 def makeCornerPlot(samples, real_params, weight=None, labels=None):
-    #beta, delta,
-    # f = open(chirpmass, 'r')
-    # g = open(totalmass, 'r')
-    # chirpMass = []
-    # totalMass = []
-    # for row in f:
-    #     #elements = row.split(' ')
-    #     elements = row.split(' ')
-    #     elements = list(map(lambda e : float(e), elements))
-    #     chirpMass += elements
-    # for row in g:
-    #     #elements = row.split(' ')
-    #     elements = row.split(' ')
-    #     elements = list(map(lambda e : float(e), elements))
-    #     totalMass += elements
-    #og_samples = np.array([beta, delta])
 
     params_true = real_params
     samples_transpose = np.array(samples).T

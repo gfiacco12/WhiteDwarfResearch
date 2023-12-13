@@ -1,9 +1,11 @@
 import numpy as np
-import math
-from const import MSOLAR
+from const import MSOLAR, SECSYEAR
 from priors import prior_draw
 from HelperCalculations import derivative, getChirpMass
 from graphing import makeCornerPlot
+import matplotlib.pyplot as plt
+from scipy.fft import fft, fftfreq
+from scipy.signal import windows
 
 #test case - resample priors for A and Phi
 A = 0.5
@@ -106,7 +108,40 @@ def test_mass_resampling(params, nsteps):
     makeCornerPlot([m1, q], masses_Msun, labels=[r"$M_{1}$", "q"])
     return
 mass_param = [0.7, 0.857143]
-#test_mass_resampling(mass_param, 500000)
 
-print(getChirpMass(0.3, 0.3))
-print(getChirpMass(1.4, 1.4))
+#test FFT stuff:
+def FFT_test():
+    #h(t)1
+    f0 = 20.e-3
+    t_obs = 0.5 * SECSYEAR
+    t = np.arange(0, t_obs, 2**4)
+    h_t = np.sin(2*np.pi*f0*t)
+
+    #h2(t)
+    month = (1/12)*SECSYEAR
+    df = 1 / (month**2)
+    print(df)
+    h2t = np.sin(2*np.pi*((f0*t)+(df*(t**2))))
+
+    N = len(h_t)
+    n_half = int(N/2)
+    h_f = fft(h_t)
+    f = fftfreq(N, 2**4)
+    win = windows.tukey(N, 0.1)
+    h_half = h_f[:n_half]
+    f_half = f[:n_half]
+
+    h2f = fft(h2t) * win
+    h2f_half = h2f[:n_half]
+
+    plt.figure()
+    plt.loglog(f_half, f_half*np.abs(h_half), label="h(f)")
+    plt.loglog(f_half, f_half*np.abs(h2f_half), label="h2(f)")
+    plt.legend()
+    plt.xlabel("Hz")
+    plt.ylabel("h(f)")
+    plt.xlim(19.99e-3, 20.01e-3)
+    #plt.axvline(x = 0.02, color = 'r')
+    plt.show()
+    return
+FFT_test()

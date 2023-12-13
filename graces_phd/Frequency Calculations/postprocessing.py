@@ -27,7 +27,7 @@ def getDataFromFile(file_name):
                 delta.append(float(row[i]))
     return beta, delta
 
-def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
+def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2, truebeta, truedelta):
 #start by reading in txt file
     beta = []
     delta = []
@@ -60,6 +60,10 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
             if eta <= 0.25:
                 chirpMass.append(chirp)
                 totalMass.append(total)
+
+    print("Original Beta Array:", len(beta))
+    print("Original Delta Array:", len(delta))
+    print("Converted Chirp Mass Array:", len(chirpMass))
     ###########################################################
     print("Final Guess Chirp:", np.median(chirpMass))
     realChirp = params_true[0]
@@ -69,7 +73,30 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
     realTotal = params_true[1]
     print("Real Total:", realTotal)
 
-    #makeCornerPlot(chirpMass, totalMass, params_true)
+    #makeCornerPlot([chirpMass, totalMass], params_true, labels=["Mc", "Mt"])
+
+    #validation
+    de = 0
+    be = 0
+    for i in range(len(delta)):
+        if delta[i] < truedelta:
+            de += 1
+        if beta[i] < truebeta:
+            be += 1
+    print("Number of delta < true delta:", de)
+    print("Number of beta < true beta:", be)
+    plt.figure()
+    plt.hist(beta, density=True)
+    plt.axvline(x=truebeta, color="r", label="True Beta")
+    plt.title("Beta Posterior")
+    plt.legend()
+    plt.show()
+    plt.figure()
+    plt.hist(delta, density=True)
+    plt.axvline(x=truedelta, color="r", label="True Delta")
+    plt.title("Delta Posterior")
+    plt.legend()
+    plt.show()
 
     M1, M2 = postProcessMcMt_to_Components(chirpMass, totalMass, mass1, mass2)
 
@@ -80,17 +107,19 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2):
         b, d = Frequency_Tides_Masses(freq0, [M1[mass]*MSOLAR, M2[mass]*MSOLAR], t_obs)
         beta_v2.append(b)
         delta_v2.append(d)
-    #makeCornerPlot(beta_v2, delta_v2, beta, delta, [2747.1244, 1.1787])
-    #makeCornerPlot(beta, delta, [2747.1244, 1.1787])
+    print("Converted Beta array:" , len(beta_v2))
+    print("Converted Delta array:" , len(delta_v2))
+    #makeCornerPlot([beta_v2, delta_v2], [beta, delta], [2747.1244, 1.1787])
+    #makeCornerPlot([beta, delta], [2747.1244, 1.1787])
     plt.figure()
-    plt.hist(beta, label='original')
-    plt.hist(beta_v2, label='post-processed')
+    plt.hist(beta, density=True, label='original')
+    plt.hist(beta_v2, density=True, label='post-processed')
     plt.title("beta comparison")
     plt.legend()
     plt.show()
     plt.figure()
-    plt.hist(delta, label='original')
-    plt.hist(delta_v2, label='post-processed')
+    plt.hist(delta, density=True,label='original')
+    plt.hist(delta_v2, density=True,label='post-processed')
     plt.title("delta comparison")
     plt.legend()
     plt.show()
@@ -101,8 +130,8 @@ def postProcessMcMt_to_Components(chirpmass, totalmass, mass1, mass2):
     convertedM1 = []
     convertedM2 = []
     for i in range(len(chirpmass)):
-        m1, m2 = get_comp_mass_Mc_Mt(chirpmass[i], totalmass[i])
-        if m1 < 1.4 and m2 < 1.4:
+        m1, m2, q = get_comp_mass_Mc_Mt(chirpmass[i], totalmass[i])
+        if m1 < 1.4 and m2 < m1:
             if np.isnan(m1) == False and np.isnan(m2) == False:
                 convertedM1.append(m1)
                 convertedM2.append(m2)
@@ -110,17 +139,7 @@ def postProcessMcMt_to_Components(chirpmass, totalmass, mass1, mass2):
     print("Final M1:", np.median(convertedM1))
     print("Final M2:", np.median(convertedM2))
 
-    #get true values based on Mc, Mt
-    true_m1, true_m2 = get_comp_mass_Mc_Mt(np.median(chirpmass), np.median(totalmass))
-    bloop = []
-    for i in range(len(convertedM1)):
-        bloop.append(np.average([convertedM1[i], convertedM2[i]]))
-
-    #makeHistogramPlots([x - 0.7 for x in convertedM1], "M1 (150000 steps)", -1, 1)
-    #makeHistogramPlots([x - 0.6 for x in convertedM2], "M2 (150000 steps)", -1, 1)
-    #makeHistogramPlots(bloop, "bloopity bloop bloop (150000 steps)", 0.6, 1)
     print(np.median(convertedM1), np.median(convertedM2))
-    makeCornerPlot(convertedM1, convertedM2, np.array([np.median(convertedM1), np.median(convertedM2)]))
     return convertedM1, convertedM2
     
 

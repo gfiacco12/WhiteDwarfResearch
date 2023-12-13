@@ -1,4 +1,5 @@
 import numpy as np
+from LISA import YEAR
 from const import *
 
 def getChirpMass(mass1, mass2):
@@ -58,50 +59,60 @@ def getParamsWithStep(params, target, step, stepUp = True):
 
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
+from scipy.signal import windows, detrend
 
-def dataFFT(freq_file, time_file, duration, samplerate):
+def dataFFT(freq_file, phasefile, time_file, duration):
     #import signal file
     signal = []
     times = []
+    phase = []
     f = open(time_file,'r') 
     freqfile = open(freq_file, 'r')
+    phasefile = open(phasefile, 'r')
     for row in f: 
         row = row.split('\n') 
         times.append(float(row[0]))  
     for row in freqfile: 
         row = row.split('\n') 
         signal.append(float(row[0]))
+    for row in phasefile: 
+        row = row.split('\n') 
+        phase.append(float(row[0]))
 
-    signal_cut = []
-    times_cut = []
-    for sig in range(len(signal)):
+    signal_detrend = detrend(signal)
+
+    # plt.figure()
+    # plt.plot(times, signal)
+    # plt.title("h(t)")
+    # plt.show()
+    sig_cut = []
+    t_cut = []
+    for sig in range(len(signal_detrend)):
         if times[sig] <= duration:
-            signal_cut.append(signal[sig])
-            times_cut.append(times[sig])
-
-    N = len(signal_cut)
-    h_f = fft(signal_cut)
-    f_t = fftfreq(N, 1/samplerate)
-
+            sig_cut.append(signal_detrend[sig])
+            t_cut.append(times[sig])
+    N = len(sig_cut)
+    window = windows.tukey(N, 0.1)
+    signal_window = window * sig_cut
+    h_f = np.fft.rfft(signal_window)
+    f_t = np.fft.rfftfreq(N, 15.03753662109375)
     import PhenomA as pa
     import LISA as li
     # create LISA object
-    lisa = li.LISA() 
+    lisa = li.LISA(0.5*YEAR) 
 
     # Plot LISA's sensitivity curve
     f  = np.logspace(np.log10(1.0e-5), np.log10(1.0e0), N)
     Sn = lisa.Sn(f)
-
     plt.figure()
-    plt.plot(times_cut, signal_cut)
-    plt.show()
-    plt.figure()
-    plt.loglog(f, np.abs(h_f))
-    plt.loglog(f, np.sqrt(f*Sn))
+    plt.loglog(f_t, f_t*np.abs(h_f), label="h(f)")
+    plt.loglog(f, np.sqrt(f*Sn), label="LISA Curve")
     plt.xlabel("Freq (Hz)")
     plt.ylabel("h(f)")
-    plt.xlim(1.0e-5, 1.0e0)
+    plt.title("0.5Yr FFT data")
+    plt.xlim(1.e-5, 1.e0)
     plt.ylim(3.0e-22, 1.0e-15)
+    plt.legend()
     plt.show()
 
     return

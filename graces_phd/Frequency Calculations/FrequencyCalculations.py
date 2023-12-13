@@ -83,6 +83,7 @@ def Frequency_Tides_Internal(freq0, chirpMass, mass1, mass2, t_obs):
     delta_fddot_v2 = fddot - fddot_0PN_v2
     fd_corr = fdot_pp * (3*I_wd/I_orb)/(1 - (3*I_wd/I_orb)) 
 
+    alpha = freq0*t_obs
     beta = fdot * (t_obs**2)
     delta = delta_fddot * (t_obs**3)
     #frequency bin
