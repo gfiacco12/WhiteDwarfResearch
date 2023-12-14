@@ -96,7 +96,7 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2, truebeta, tru
     plt.show()
 
     #conver Mc, Mt to M1, M2
-    M1, M2 = postProcessMcMt_to_Components(chirpMass, totalMass, mass1, mass2)
+    M1, M2 = postProcessMcMt_to_Components(chirpMass, totalMass)
 
     #re-convert to beta delta
     beta_v2 = []
@@ -121,18 +121,22 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2, truebeta, tru
     return chirpMass, totalMass
 
 
-def postProcessMcMt_to_Components(chirpmass, totalmass, mass1, mass2):
+def postProcessMcMt_to_Components(chirpmass, totalmass):
     convertedM1 = []
     convertedM2 = []
+    bad_apples = []
     for i in range(len(chirpmass)):
         m1, m2, q = get_comp_mass_Mc_Mt(chirpmass[i], totalmass[i])
         if m1 < 1.4 and m2 < m1:
             if np.isnan(m1) == False and np.isnan(m2) == False:
                 convertedM1.append(m1)
                 convertedM2.append(m2)
+                continue
+        bad_apples.append([chirpmass[i], totalmass[i]])
 
     print("Final M1:", np.median(convertedM1))
     print("Final M2:", np.median(convertedM2))
+    print("Bad Apples:", bad_apples)
     return convertedM1, convertedM2
     
 
