@@ -14,15 +14,9 @@ def main(freq0, mass1, mass2, dl, t_obs):
     fD_1PN, fDD_1PN, delta= Frequency_1PN(freq0, mass1, mass2, t_obs)
     beta, delta = Frequency_Tides_Masses(freq0, [mass1, mass2], t_obs)
 
-    #getRootFinder_tides_chirpTotalMass(freq0, beta, delta, t_obs, params_true[0], params_true[1], 0.3*MSOLAR, 1.4*MSOLAR)
     # Some amplitude/SNR calculations
     amp = calculateAmplitude(1000, t_obs)
     amp_phys = calculateAmplitude_phys(dl, 0.564*MSOLAR, freq0)
-    #snr = getSNR(t_obs, amp_phys, 1.5, freq0, fD_1PN, fDD_1PN)
-    #fisher_frequencies(freq0, fD_1PN, fDD_1PN, t_obs, amp)
-    #fisher_frequencies(freq0, beta, delta, t_obs, amp)
-    #fisher_chirpTotal(freq0, mass1, mass2, t_obs, amp)
-    #fisher_masses(freq0, mass1, mass2, t_obs, amp)
 
     #makeDeltaPlot(freq0, mass1, mass2, t_obs, amp)
 
@@ -30,13 +24,9 @@ def main(freq0, mass1, mass2, dl, t_obs):
     frequencyPostProcessing(freq0, "beta delta mass check 50000 v2.txt", t_obs, mass1, mass2, beta, delta)  
 
     #prior transfers
-    #jac = get_Jacobian([mass1, mass2], freq0, t_obs)
     #drawSamples_M1M2(10000, [0.3,0.3], [1.4,1.4], [mass1, mass2], freq0)
-    sigmas = [0.017, 0.0403]
+    #sigmas = [0.017, 0.0403]
     #resampling_test([beta, delta], freq0, t_obs, 500000, sigmas)
     #resampling([beta, delta], freq0, t_obs, [mass1, mass2])
 
-    #makeWaveformPlot("AET_FTs_freqmodel.txt", "times.txt")
-    #dataFFT("AET_Signal.txt", "AET_PPTs.txt", "times.txt", 0.5*SECSYEAR)
-    #plotSensitivityCurveLISA()
 main(20.e-3, 0.7*MSOLAR, 0.6*MSOLAR, 7.6e-22*KPCSEC, 4.0*SECSYEAR)

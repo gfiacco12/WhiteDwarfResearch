@@ -61,9 +61,6 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2, truebeta, tru
                 chirpMass.append(chirp)
                 totalMass.append(total)
 
-    print("Original Beta Array:", len(beta))
-    print("Original Delta Array:", len(delta))
-    print("Converted Chirp Mass Array:", len(chirpMass))
     ###########################################################
     print("Final Guess Chirp:", np.median(chirpMass))
     realChirp = params_true[0]
@@ -73,7 +70,7 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2, truebeta, tru
     realTotal = params_true[1]
     print("Real Total:", realTotal)
 
-    #makeCornerPlot([chirpMass, totalMass], params_true, labels=["Mc", "Mt"])
+    makeCornerPlot([chirpMass, totalMass], params_true, labels=["Mc", "Mt"])
 
     #validation
     de = 0
@@ -98,6 +95,7 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2, truebeta, tru
     plt.legend()
     plt.show()
 
+    #conver Mc, Mt to M1, M2
     M1, M2 = postProcessMcMt_to_Components(chirpMass, totalMass, mass1, mass2)
 
     #re-convert to beta delta
@@ -107,10 +105,7 @@ def frequencyPostProcessing(freq0, file_name, t_obs, mass1, mass2, truebeta, tru
         b, d = Frequency_Tides_Masses(freq0, [M1[mass]*MSOLAR, M2[mass]*MSOLAR], t_obs)
         beta_v2.append(b)
         delta_v2.append(d)
-    print("Converted Beta array:" , len(beta_v2))
-    print("Converted Delta array:" , len(delta_v2))
-    #makeCornerPlot([beta_v2, delta_v2], [beta, delta], [2747.1244, 1.1787])
-    #makeCornerPlot([beta, delta], [2747.1244, 1.1787])
+
     plt.figure()
     plt.hist(beta, density=True, label='original')
     plt.hist(beta_v2, density=True, label='post-processed')
@@ -138,8 +133,6 @@ def postProcessMcMt_to_Components(chirpmass, totalmass, mass1, mass2):
 
     print("Final M1:", np.median(convertedM1))
     print("Final M2:", np.median(convertedM2))
-
-    print(np.median(convertedM1), np.median(convertedM2))
     return convertedM1, convertedM2
     
 
